@@ -31,9 +31,13 @@ import cookielib
 import time
 import subprocess
 import opener
+'''
+ 主程序
+
+'''
 class Gethtml_digikey():
     '''
-        在get_html中根据kwargs的func键值调用opener函数，该函数定义在每个抓取任务目录的opener.py模块中 
+        在get_html中根据kwargs的func键值调用opener函数，该函数定义在每个抓取任务目录的opener.py模块中
     '''
     def __init__(self,url,*args,**kwargs):
         self.url = url
