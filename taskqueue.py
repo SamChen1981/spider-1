@@ -12,8 +12,10 @@ from  multiprocessing import Lock
 import pika
 #channel.queue_declare(queue=flag, durable=True)
 import traceback
+import Queue
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 #channel=connection.channel()
+simple_queue=Queue.Queue(0)
 
 class task_queue():
     #队列的目录
@@ -147,6 +149,51 @@ class task_queue():
 		sys.exit() 
 
             print " [x] Sent %r" % (rabbitmsg,)
+    @classmethod
+    def popmsgfrom_simpleQueue(cls,flag):
+        if flag=='NORMAL':
+            try:
+                msg=simple_queue.get_nowait()
+                return msg
+            except:
+                if SETTING.DEBUG:
+                    error=traceback.format_exc()
+                    print error
+                if simple_queue.empty():
+                    return 1
+                else:
+                    return -1
+
+
+    @classmethod
+    def sendtask2simpleQueue(cls,message,flag,func=None,exchange_name='',**kwargs):
+        msgs=[]
+        if not isinstance(message,list):
+            return
+        #channel=task_queue.connection.channel()
+#	task_queue.channel.queue_declare(queue=flag, durable=True)
+	count=0
+	print 'MESSAGE :%s' %message
+        for msg in message:
+            #传入的值为一个字典类型，有meta信息
+            resultmsg={}
+            
+            if isinstance(msg,dict):
+                if not msg.has_key('url'):
+                    continue
+                msg.update({'count':5,'flag':flag})
+		msg.update(kwargs)
+                resultmsg.update(msg)
+            if isinstance(msg,(str,unicode)):
+                #当没有meta信息的时候
+                resultmsg.update({'url':msg,'flag':flag,'count':5})
+		resultmsg.update(kwargs)
+            if SETTING.DEBUG:
+                print 'QUEUE NAME : %s' % flag
+            simple_queue.put(resultmsg)
+            if SETTING.DEBUG:
+                print " [x] Sent %r" % (resultmsg,)
+
 
     @classmethod
     def sendtask2BDB(cls,message,flag,mqtype=None,func=None,exchange_name='',**kwargs):
@@ -158,8 +205,12 @@ class task_queue():
             task_queue.sendtask2Rabbit(message,flag,exchange_name=exchange_name,**kwargs)
         if mqtype=='BDB':
             task_queue.sendtask2Berkeley(message,flag)
-	
-    
+        if mqtype=='simple':
+	    
+	    print 'MESSAGE :%s' %message
+            task_queue.sendtask2simpleQueue(message,flag,**kwargs)
+
+   
     @classmethod
     def sendtask2Berkeley(cls,message,flag,func=None,**kwargs):
         msgs=[]
