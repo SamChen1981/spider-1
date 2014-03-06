@@ -34,16 +34,16 @@ class task_queue():
      3.popmsgfromBDB,从bdb中弹出一条记录
      4.checkvisited:检查一条记录是否存在
      5.sendtask2BDB:向队列发送一条消息
-    
+
     '''
     def __init__(self,*args,**kwargs):
 	for k,v in kwargs.items():
-	    print  v 
+	    print  v
 	    task_queue.channel.queue_declare(queue=v, durable=True)
 
         if task_queue.db_directory:
-            if os.path.isdir(task_queue.db_directory):  
-	        pass 
+            if os.path.isdir(task_queue.db_directory):
+	        pass
             else:
                 try:
 
@@ -51,7 +51,7 @@ class task_queue():
                 except:
                     error=traceback.format_exc()
                     print error
- 
+
     #保存url,url必须是list,即是只有一个
     @classmethod
     def savevisitedURL(cls,urls,*args,**kwargs):
@@ -73,7 +73,7 @@ class task_queue():
     #根据队列弹出一个url
     @classmethod
     def popmsgfromBDB(cls,flag,url=None):
-        print 'THE FLAG ISsdf' 
+        print 'THE FLAG ISsdf'
         if flag=='ERROR':
             edb=QueueDB(os.path.join(task_queue.db_directory,'errorqueue.db'))
             purl=edb.pop_url()
@@ -88,7 +88,7 @@ class task_queue():
             purl=qdb.pop_url()
             print 'the url is %s' % purl
             qdb.close()
-             
+
             return purl
         if flag=='DOWNLOAD':
             ddb=WebpageDB(os.path.join(task_queue.db_directory,'downloadqueue.db'))
@@ -108,7 +108,7 @@ class task_queue():
     @classmethod
     def send2downloadBDB(cls,message,*args,**kwargs):
         ddb=WebpageDB(os.path.join(task_queue.db_directory,'downloadqueue.db'))
-        ddb.html2db(message,kwargs['filepath']) 
+        ddb.html2db(message,kwargs['filepath'])
         ddb.close()
     #保存到待抓取队列或者错误队列，根据参数flag判断
     @classmethod
@@ -146,7 +146,7 @@ class task_queue():
             except:
             	error=traceback.format_exc()
                 print error
-		sys.exit() 
+		sys.exit()
 
             print " [x] Sent %r" % (rabbitmsg,)
     @classmethod
@@ -177,7 +177,7 @@ class task_queue():
         for msg in message:
             #传入的值为一个字典类型，有meta信息
             resultmsg={}
-            
+
             if isinstance(msg,dict):
                 if not msg.has_key('url'):
                     continue
@@ -206,11 +206,10 @@ class task_queue():
         if mqtype=='BDB':
             task_queue.sendtask2Berkeley(message,flag)
         if mqtype=='simple':
-	    
 	    print 'MESSAGE :%s' %message
             task_queue.sendtask2simpleQueue(message,flag,**kwargs)
 
-   
+
     @classmethod
     def sendtask2Berkeley(cls,message,flag,func=None,**kwargs):
         msgs=[]
@@ -228,7 +227,7 @@ class task_queue():
                 #当没有meta信息的时候
                 resultmsgs={'url':msg,'func':func,'flag':flag}
                 msgs.append(json.dumps(resultmsgs,ensure_ascii=False))
-        print msgs 
+        print msgs
 
         if flag=='ERROR':
             edb=QueueDB(os.path.join(task_queue.db_directory,'errorqueue.db'))
