@@ -21,64 +21,64 @@ class filter_url(urlFilter):
     '''
     def __init__(self,*args,**kwargs):
         self.reglist=SETTING.reglist
-	self.count=SETTING.count1
-	self.local_flag=SETTING.local_flag
-	self.LOCALPATH_QUEUE=SETTING.LOCALPATH_QUEUE
-	self.dlregx=SETTING.dlregx
-	self.save_dir=SETTING.save_dir
-	self.is_javascript=SETTING.is_javascript
-	self.page_save_reglist=SETTING.page_save_reglist
+        self.count=SETTING.count1
+        self.local_flag=SETTING.local_flag
+        self.LOCALPATH_QUEUE=SETTING.LOCALPATH_QUEUE
+        self.dlregx=SETTING.dlregx
+        self.save_dir=SETTING.save_dir
+        self.is_javascript=SETTING.is_javascript
+        self.page_save_reglist=SETTING.page_save_reglist
         try:
             self.exchange_name=SETTING.exchange_name
-	    self.page_save_reglist=SETTING.page_save_reglist
-	except:
+            self.page_save_reglist=SETTING.page_save_reglist
+        except:
             pass
     #打开一个链接
 
 
     def openlink(self,reglist,url,parno,**kwargs):
         if not urlFilter.matchurl(**{'regx':reglist,'url':url}):
-           return ''
-	fetch=Fetch_WebContent()
+            return ''
+        fetch=Fetch_WebContent()
         return fetch.getAllContent(**kwargs)
 
 
     def prefilter_open(self,urlpack):
         if not urlFilter.matchurl(**{'regx':SETTING.reglist,'url':self.relink}):
-           return ''
-	fetch=Fetch_WebContent()
+            return ''
+        fetch=Fetch_WebContent()
         con=fetch.getAllContent(self.relink,**urlpack)
         #con=fetch.getAllContent(self.relink,partno=self.partno)
-	if isinstance(con,tuple):
+        if isinstance(con,tuple):
 
-	    urlpack.update({'content':con[0]})
-	    urlpack.update({'realurl':con[1]})
-	    try:
-	        urlpack.update({'localpath':con[2]})
-	    except:
-	        urlpack.update({'localpath':''})
+            urlpack.update({'content':con[0]})
+            urlpack.update({'realurl':con[1]})
+            try:
+                urlpack.update({'localpath':con[2]})
+            except:
+                urlpack.update({'localpath':''})
         if urlpack['content']==-1:
             print '未能获取到数据，将退出...'
             return
 
     def prefilter_0(self,urlpack):
-       	if isinstance(urlpack,dict):
+        if isinstance(urlpack,dict):
             self.relink=urlpack['url']
             self.flag=urlpack['flag']
-	    self.unpacked_url=urlpack
+            self.unpacked_url=urlpack
             try:
                 self.partno=urlpack['partno']
             except:
-		        self.partno=''
+                self.partno=''
         elif isinstance(self.urlpack,(str,unicode)):
             self.relink=json.loads(urlpack)['url']
             try:
                 self.partno=json.loads(urlpack)['partno']
             except:
-		        self.partno=''
-  	    self.flag=json.loads(urlpack)['flag']
-	    self.unpacked_url=json.loads(urlpack)
-	#self.content=self.openlink(reglist=self.reglist,url=self.relink,local_flag=self.local_flag,**{'filepath':self.filepath,'is_javascript':self.is_javascript,'dlregx':self.dlregx,'save_dir':self.save_dir,'LOCALPATH_QUEUE':self.LOCALPATH_QUEUE,'page_save_reglist':self.page_save_reglist})
+                self.partno=''
+            self.flag=json.loads(urlpack)['flag']
+            self.unpacked_url=json.loads(urlpack)
+        #self.content=self.openlink(reglist=self.reglist,url=self.relink,local_flag=self.local_flag,**{'filepath':self.filepath,'is_javascript':self.is_javascript,'dlregx':self.dlregx,'save_dir':self.save_dir,'LOCALPATH_QUEUE':self.LOCALPATH_QUEUE,'page_save_reglist':self.page_save_reglist})
 
         #if self.content:
         #    task_queue.sendtask2BDB([filepath],self.LOCALPATH_QUEUE,exchange_name='',mqtype='RABBIT',**{'count':10})
@@ -86,12 +86,12 @@ class filter_url(urlFilter):
     #启动过滤链
     @url_decorator
     def processChain(self,urlpack):
-	'''
-           本函数负责一次启动prefilter_*,filter_*,postfilter_*函数
-           prefilter_*(urlpack)
-           filter_*(urlpack)
-           postfilter_*(urlpack,link)
-           urlpack为字典，可以在函数中修改，urlpack只有一个实例，任何影响这个实例的操作都会对最终的parurl字典产生影响。
+        '''
+        本函数负责一次启动prefilter_*,filter_*,postfilter_*函数
+        prefilter_*(urlpack)
+        filter_*(urlpack)
+        postfilter_*(urlpack,link)
+        urlpack为字典，可以在函数中修改，urlpack只有一个实例，任何影响这个实例的操作都会对最终的parurl字典产生影响。
         '''
         dictlinks=[]
         rawlinklist=[]
@@ -159,14 +159,14 @@ class filter_url(urlFilter):
             print 'THE NEWLY ADDED URL IS %s ' % len(uniquelinks)
             print 'add queue %s' % self.flag
         # if isinstance(parurl,str):
-           #     rawlinks=[]
-           #     #判断是否为绝对地址
-           #     pattern=re.compile(r'(?:http.+|www.+).+')
-           #     match=re.search(pattern,message)
-           #     if not match:
-           #         message=urljoin(self.domain,message)
-           #         rawlinks.append(message)
-           #     uniquelinks=task_queue.savevisitedURL(rawlinks)
+            #     rawlinks=[]
+            #     #判断是否为绝对地址
+            #     pattern=re.compile(r'(?:http.+|www.+).+')
+            #     match=re.search(pattern,message)
+            #     if not match:
+            #         message=urljoin(self.domain,message)
+            #         rawlinks.append(message)
+            #     uniquelinks=task_queue.savevisitedURL(rawlinks)
 
             #    task_queue.sendtask2BDB(uniquelinks,self.flag)
 
@@ -195,36 +195,36 @@ class rule1(Rule):
         #初始化保存的文件名
         self.filename=kwargs['filename']
         self.saved_field=kwargs['saved_field']
-	#下载队列
-	try:
+        #下载队列
+        try:
             self.DOWNLOAD_QUEUE=kwargs['DOWNLOAD_QUEUE']
         except:
-	    pass
+            pass
         #初始化下载标志,0表示和不下载，1表示下载
         self.downloadtag=kwargs['downloadtag']
 #保存抓取的记录到数据库
     def save_db(self,table,*args,**kwargs):
-	if kwargs['result'].has_key('dbinfopack'):
-	    if isinstance(kwargs['result']['dbinfopack'],dict):
-	    	dbinfopack=kwargs['result']['dbinfopack']
-	    	dbname=dbinfopack.get('dbname','')
-	    	table=dbinfopack.get('table','')
-	    	host=dbinfopack.get('host','')
-	    	passwd=dbinfopack.get('passwd','')
-		user=dbinfopack.get('user','')
-	    	del kwargs['result']['dbinfopack']
-	    else:
-	    	dbname=self.dbname
-	    	table=table
-	    	host=self.host
-  	    	user=self.user
-	    	passwd=self.passwd
-	else:
-   	    dbname=self.dbname
-	    table=table
-	    host=self.host
-  	    user=self.user
-	    passwd=self.passwd
+        if kwargs['result'].has_key('dbinfopack'):
+            if isinstance(kwargs['result']['dbinfopack'],dict):
+                dbinfopack=kwargs['result']['dbinfopack']
+                dbname=dbinfopack.get('dbname','')
+                table=dbinfopack.get('table','')
+                host=dbinfopack.get('host','')
+                passwd=dbinfopack.get('passwd','')
+                user=dbinfopack.get('user','')
+                del kwargs['result']['dbinfopack']
+            else:
+                dbname=self.dbname
+                table=table
+                host=self.host
+                user=self.user
+                passwd=self.passwd
+        else:
+            dbname=self.dbname
+            table=table
+            host=self.host
+            user=self.user
+            passwd=self.passwd
         if not table and table=='':
             return
         for r in self.dbregx:
@@ -238,41 +238,41 @@ class rule1(Rule):
                 res=db.checkexist('SHOW COLUMNS FROM `'+table+'` WHERE field =\''+k+'\'',**{'field':(k,),'host':host,'user':user,'passwd':passwd,'db':dbname})
                 if not res:
                     #altersql='alter table '+table+' add '+k+' varchar('+str(len(v)*2)+')'
-		    altersql='alter table %s add `%s` varchar(%s)' %(table,k.encode('utf8'),len(v)*3)
-		    	
-		    print '字段不存在，正在创建中... %s' %altersql  
+                    altersql='alter table %s add `%s` varchar(%s)' %(table,k.encode('utf8'),len(v)*3)
+
+                    print '字段不存在，正在创建中... %s' %altersql  
                     db.execute_sql_without_ret([altersql,[]],1,**{'host':host,'passwd':passwd,'db':dbname,'user':user})
 
-	    sql=db.insert_kwargs(table,**kwargs['result'])
-	    if not isinstance(sql,(list,tuple)):
-		 raise Exception('GENERATOR SQL FAIL!!!!')
+            sql=db.insert_kwargs(table,**kwargs['result'])
+            if not isinstance(sql,(list,tuple)):
+                raise Exception('GENERATOR SQL FAIL!!!!')
             #sql=db.gen_insert(table,kwargs['result'])
             if args and isinstance(args,tuple):
                 update=db.gen_on_duplicate(*args,**{'joiner':','})
                 sql[0]=' '.join([sql[0],update])
             if SETTING.DEBUG:
-	        print 'SQL: %s' %sql
+                print 'SQL: %s' %sql
             opresult=db.execute_sql(sql,1,**{'host':host,'passwd':passwd,'db':dbname,'user':user})
             return opresult
     @classmethod
     def extractor_digit(cls,content):
-	    pattern=re.compile(r'[\s\S]*?([0-9]+)[\s\S]*?')
-	    value=extractor.getItemAsValue(content,pattern,1)
-	    value=cls.strip_tags(value)
-	    return value
+        pattern=re.compile(r'[\s\S]*?([0-9]+)[\s\S]*?')
+        value=extractor.getItemAsValue(content,pattern,1)
+        value=cls.strip_tags(value)
+        return value
     @classmethod
     def extractor_char(cls,content):
-	    pattern=re.compile(r'[\s\S]*?(\w+)[\s\S]*?')
-	    value=extractor.getItemAsValue(content,pattern,1)
-	    value=cls.strip_tags(value)
-	    return value
+        pattern=re.compile(r'[\s\S]*?(\w+)[\s\S]*?')
+        value=extractor.getItemAsValue(content,pattern,1)
+        value=cls.strip_tags(value)
+        return value
 
     @classmethod
     def extractor_char_digit(cls,content):
-	    pattern=re.compile(r'[\s\S]*?([a-zA-Z0-9]+)[\s\S]*?')
-	    value=extractor.getItemAsValue(content,pattern,1)
-	    value=cls.strip_tags(value)
-	    return value
+        pattern=re.compile(r'[\s\S]*?([a-zA-Z0-9]+)[\s\S]*?')
+        value=extractor.getItemAsValue(content,pattern,1)
+        value=cls.strip_tags(value)
+        return value
     @classmethod
     def removeSpecialChar(cls,content):
         pattern=re.compile(r'.*?(").*?')
@@ -287,15 +287,15 @@ class rule1(Rule):
         content=re.sub(pattern,'',content)
         pattern=re.compile(r'\'')
         content=re.sub(pattern,'',content)
-	pattern=re.compile(r'/')
+        pattern=re.compile(r'/')
         content=re.sub(pattern,'',content)
         pattern=re.compile(r'\t')
         content=re.sub(pattern,'',content)
- 	pattern=re.compile(r'\n')
+        pattern=re.compile(r'\n')
         content=re.sub(pattern,'',content)
-  	pattern=re.compile(r'<')
+        pattern=re.compile(r'<')
         content=re.sub(pattern,'',content)
-  	pattern=re.compile(r'>')
+        pattern=re.compile(r'>')
         content=re.sub(pattern,'',content)
         return content
 
@@ -324,15 +324,15 @@ class rule1(Rule):
 
 #解析页面链,该链根据提供的正则匹配过滤后的url,如果匹配，则进行操作
     def preparse_0(self,parurl):
-	try:
-	    l=parurl['realurl']
-	except:
-	    return parurl
-	for r in SETTING.page_save_reglist:
+        try:
+            l=parurl['realurl']
+        except:
+            return parurl
+        for r in SETTING.page_save_reglist:
             if not Rule.matchurl(url=l,regx=r):
                 continue
-	    parurl.update({'localpath':self.localpath})
-	    try:
+            parurl.update({'localpath':self.localpath})
+            try:
                 self.update=parurl['updatefield']
             except:
                 self.update=SETTING.updatefield
@@ -420,7 +420,7 @@ class rule1(Rule):
                         pass
                     if isinstance(rl,tuple):
                         parurl.update({rl[0]:rl[1],rl1[0]:rl1[1]})
-                       # info=gen.next()
+                    # info=gen.next()
                         remotelink=rl[1]
                         locallink=rl1[1]
                         paxel(str(remotelink),locallink, blocks=4, proxies={})
@@ -431,36 +431,36 @@ class rule1(Rule):
 
 
     def processChain(self,linkinfo):
-	'''
-         本函数一次启动preparse_*(parurl),parse(parurl),postparse(parurl)
-	 parurl为字典，可以在函数中修改，parurl只有一个实例，任何影响这个实例的操作都会对最终的parurl字典产生影响。
+        '''
+        本函数一次启动preparse_*(parurl),parse(parurl),postparse(parurl)
+         parurl为字典，可以在函数中修改，parurl只有一个实例，任何影响这个实例的操作都会对最终的parurl字典产生影响。
 
-  	'''
+        '''
         link=''
         table=''
         if not isinstance(linkinfo,(str,unicode,dict)):
             return 0
-	if isinstance(linkinfo,(str,unicode,)):
+        if isinstance(linkinfo,(str,unicode,)):
             linkinfo=json.loads(linkinfo)
         if not linkinfo.has_key('url'):
             return -2
         link=linkinfo['url']
-	try:
-	    self.content=linkinfo['content']
+        try:
+            self.content=linkinfo['content']
             if self.content==-1:
                 print '未能获取到HTML数据，将退出...'
                 return
-	except:
-	    return
-	self.realurl=linkinfo['realurl']
-	self.localpath=linkinfo['localpath']
+        except:
+            return
+        self.realurl=linkinfo['realurl']
+        self.localpath=linkinfo['localpath']
         #启动预处理
         for attr in dir(self):
             if attr.startswith('preparse_'):#启动预处理
                 if callable(getattr(self,attr)):
                     res=getattr(self,attr)(linkinfo)
-		    if res==-1:
-		        return
+                    if res==-1:
+                        return
         #启动解析页面程序
         result={}
         for attr in dir(self):
@@ -478,15 +478,15 @@ class rule1(Rule):
                 if isinstance(subresult,dict):
                     linkinfo.update(subresult)
     def savemodel(self,link,table=None,*args,**kwargs):
-	'''
-  	 在这里执行数据库操作，kwargs包含要保存的字段和字段值。程序会自动建立字段和字段值。
- 	'''	
+        '''
+        在这里执行数据库操作，kwargs包含要保存的字段和字段值。程序会自动建立字段和字段值。
+        '''	
         if SETTING.DEBUG:
             print 'THE DBINFO IS %s' %kwargs
             print 'TABLE IS %s' %table
 
         if not table:
-	    table=SETTING.dbtable
+            table=SETTING.dbtable
         for attr in dir(self):
             savemethod=''
             if attr.startswith('save_'):
@@ -497,5 +497,4 @@ class rule1(Rule):
                 else:
                     return getattr(self,savemethod)(table,**{'result':kwargs})
         return -1
-
 
