@@ -83,10 +83,5 @@ class SavePageBackend(object):
         则保存所有遇到的页面，如果是[!]，不保存任何页面。
     """
     def saveHTML(self,content,**kwargs):
-        
-       
-        if len(settings.PAGE_SAVE_REGLIST)==0:
-            raise ImproperlyConfigured("REGLIST MUST SET PROPERLY")
-
         filepath=saveHTML(**{'content':content})
         return filepath

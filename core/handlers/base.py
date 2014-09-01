@@ -15,8 +15,42 @@ from django.utils import six
 from django.views import debug
 from spider.utils.module_loading import import_string
 from spider.core.exceptions import ImproperlyConfigured
+from spider.staging import staging
 logger = logging.getLogger('django.request')
 
+def _(links):
+    
+    uniquelinks=[]
+    urllist=[]
+    for parurl in links:
+        if isinstance(parurl,dict):
+            for k,message in parurl.items():
+                #依次取出所有元素判断该url是否被访问过
+                if k=='url':
+        #判断是否为绝对地址
+                    message=str(message)
+                    pattern=re.compile(r'(?:http.+|www.+).+')
+                    match=re.search(pattern,message)
+                    if not match:
+                        message=os.path.join(settings.domain,message)
+        #message=urllib.quote(message)
+                    
+                    if not stagine.checkvisited(message):
+                        parurl['url']=message
+                        urllist.append(message)
+                        uniquelinks.append(parurl)
+                            if len(uniquelinks)>0:
+            for link in uniquelinks:
+                
+                
+                if SETTING.SPEC_FLAG and isinstance(SETTING.SPEC_FLAG,(unicode,str)):
+                    task_queue.sendtask2BDB(uniquelinks,SETTING.SPEC_FLAG,mqtype='RABBIT',exchange_name=self.exchange_name)
+                else:
+                    task_queue.sendtask2BDB(uniquelinks,SETTING.flag,mqtype='RABBIT',exchange_name=self.exchange_name)
+
+        for link in urllist:
+            staging.add(link)
+            
 class BaseHandler(object):
     # Changes that are always applied to a response (in this order).
     response_fixes = [

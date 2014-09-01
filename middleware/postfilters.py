@@ -12,7 +12,7 @@ from spider.conf import settings
 from django import http
 from django.core.mail import mail_managers
 from spider.utils.http import urlquote
-from spider.utils import six
+
 from django.core import urlresolvers
 from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
@@ -38,26 +38,7 @@ def _get_rid_of_dups(relink,rawlinklist):
                     I2.append(rawurl['url'])
     return links
 
-def _(links):
-    uniquelinks=[]
-    urllist=[]
-    for parurl in links:
-        if isinstance(parurl,dict):
-            for k,message in parurl.items():
-                #依次取出所有元素判断该url是否被访问过
-                if k=='url':
-        #判断是否为绝对地址
-                    message=str(message)
-                    pattern=re.compile(r'(?:http.+|www.+).+')
-                    match=re.search(pattern,message)
-                    if not match:
-                        message=os.path.join(settings.domain,message)
-        #message=urllib.quote(message)
-                    
-                    if not task_queue.checkvisited(message):
-                        parurl['url']=message
-                        urllist.append(message)
-                        uniquelinks.append(parurl)
+
 
 class PostFilterMiddleware(object):
     """
@@ -68,4 +49,6 @@ class PostFilterMiddleware(object):
         
        
         linksdict=_get_rid_of_dups(rawlinks)
-        _(linksdict)
+        return linksdict
+    
+       

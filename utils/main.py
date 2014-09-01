@@ -1,3 +1,4 @@
+#encoding=utf8
 from gevent import gevent
 class rabbitmq_fetch(object):
     def consumer(self):
@@ -19,7 +20,7 @@ class rabbitmq_fetch(object):
     
         channel.start_consuming()
     
-    #rabbitmqÏûÏ¢´¦Àí
+    #rabbitmqï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
     def callback(self,ch, method, properties, body):
         rule=Acrule(local_dir=SETTING.local_dir,DOWNLOAD_QUEUE=SETTING.DOWNLOAD_QUEUE,LOCALPATH_QUEUE=SETTING.LOCALPATH_QUEUE,downloadtag=SETTING.downloadtag,saved_field=SETTING.saved_field,domain=SETTING.domain,dlregx=SETTING.dlregx,prregx=SETTING.prregx,dbregx=SETTING.dbregx,dbname=SETTING.dbname,\
                     host=SETTING.host,user=SETTING.user,passwd=SETTING.passwd,filename='huaqiang_com_contact')
@@ -46,7 +47,7 @@ class rabbitmq_fetch(object):
             count=json.loads(urlpack)['count']
 
         except:
-            print 'urlpack³öÏÖ´íÎó\n'
+            print 'urlpackï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½\n'
             urlpack=string.join([urlpack,'}'],'')    
         count=count-1
 

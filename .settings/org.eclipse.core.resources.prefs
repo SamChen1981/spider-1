@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+encoding//msgsystem/backends.py=utf8
+encoding//save_page/backends.py=utf8
+encoding//staging/backends.py=utf8
+encoding//utils/fetch_huaqiang.py=utf8
+encoding//utils/fetch_util.py=utf8
+encoding//utils/main.py=utf8
+encoding//utils/taskqueue.py=utf8
