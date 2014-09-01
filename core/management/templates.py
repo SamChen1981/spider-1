@@ -186,7 +186,7 @@ class TemplateCommand(BaseCommand):
         know into which directory Django has been installed.
         """
         if template is None:
-            return path.join(django.__path__[0], 'conf', subdir)
+            return path.join(spider.__path__[0], 'conf', subdir)
         else:
             if template.startswith('file://'):
                 template = template[7:]

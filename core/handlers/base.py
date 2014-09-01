@@ -13,9 +13,9 @@ from django.utils.encoding import force_text
 from django.utils.importlib import import_module
 from django.utils import six
 from django.views import debug
-
+from spider.utils.module_loading import import_string
+from spider.core.exceptions import ImproperlyConfigured
 logger = logging.getLogger('django.request')
-
 
 class BaseHandler(object):
     # Changes that are always applied to a response (in this order).
@@ -27,7 +27,6 @@ class BaseHandler(object):
     def __init__(self):
         self._request_middleware =_opener_middleware=self._view_middleware = self._template_response_middleware = self._response_middleware = self._exception_middleware = None
 
-
     def load_middleware(self):
         """
         Populate middleware lists from settings.MIDDLEWARE_CLASSES.
@@ -38,7 +37,7 @@ class BaseHandler(object):
         self._template_response_middleware = []
         self._response_middleware = []
         self._exception_middleware = []
-
+        self._postfilter_middleware=[]
         request_middleware = []
         for middleware_path in settings.MIDDLEWARE_CLASSES:
             try:
@@ -58,25 +57,45 @@ class BaseHandler(object):
             except exceptions.MiddlewareNotUsed:
                 continue
 
-            if hasattr(mw_instance, 'process_request'):
-                request_middleware.append(mw_instance.process_request)
-            if hasattr(mw_instance, 'process_view'):
-                self._view_middleware.append(mw_instance.process_view)
-            if hasattr(mw_instance, 'process_template_response'):
-                self._template_response_middleware.insert(0, mw_instance.process_template_response)
-            if hasattr(mw_instance, 'process_response'):
-                self._response_middleware.insert(0, mw_instance.process_response)
-            if hasattr(mw_instance, 'process_exception'):
-                self._exception_middleware.insert(0, mw_instance.process_exception)
-            if hasattr(mw_instance, 'process_open'):
-                self._opener_middleware.insert(0, mw_instance.process_open)            
+          
+            if hasattr(mw_instance, 'process_filter'):
+                self._filter_middleware.append(mw_instance.process_view)
+            if hasattr(mw_instance, 'process_postfilter'):
+                self._postfilter_middleware.append(mw_instance.process_view)
+           
+            if hasattr(mw_instance, 'open_open'):
+                self.url_openermiddleware.append(mw_instance.open_open)         
         # We only assign to this when initialization is complete as it is used
         # as a flag for initialization being complete.
         self._request_middleware = request_middleware
     def go_get_it(self,urldict):
         #Apply opener middleware
+        
+        urldict.update({'openers':self.url_openermiddleware})
         for middleware_method in self._opener_middleware:
-            middleware_method(urldict)
+            
+            con=middleware_method(urldict)
+            if isinstance(con, tuple) and len(con)==3:
+                break
+
+            
+        content,realurl,localpath=con
+        #遍历所有保存页面的后端，
+        from spider.save_page import saveHTML
+        
+        docid=saveHTML(content)
+        
+        #filter返回一个当前url下一级的所有链接,可以是list 也可以是dict
+        for middleware_method in self._filter_middleware:
+            rawlinks=middleware_method(urldict)
+        #postfilter的基本功能:
+        #1.对相同链接进行去重
+        #2.将下一级链接存储到队列里面
+        
+        for middleware_method in self._postfilter_middleware:
+            middleware_method(rawlinks)
+           
+        
             
     def get_response(self, request):
         "Returns an HttpResponse object for the given HttpRequest"
