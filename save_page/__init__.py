@@ -13,8 +13,12 @@ def get_backends():
         raise ImproperlyConfigured('No authentication backends have been defined. Does AUTHENTICATION_BACKENDS contain anything?')
     return backends
 
-
-def saveHTML(content):
-    for backend in get_backends():
-        filepath=backend.saveHTML(**{'content':content})
+class Storage(object):
+    def __init__(self):
+        for backend in get_backends():
+            self.backend=backend
+    def save(self,content):
+            
+        filepath=self.backend.saveHTML(**{'content':content})
         return filepath
+        

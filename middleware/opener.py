@@ -21,6 +21,7 @@ class OpenerMiddleware(object):
         openerMiddleware是用来调用打开一个url所需要的配置
         从用户自定义的opener.py中读取BaseOpener的子类，该类必须实例化，否则报错
     """
+    
     def process_open(self,urldict):
         
        
@@ -32,4 +33,5 @@ class OpenerMiddleware(object):
             return ''
         fetch=Fetch_WebContent()
         con=fetch.getAllContent(urldict['url'],**urldict)
-        return con
+        urldict.update({'content':con[0]})
+        
