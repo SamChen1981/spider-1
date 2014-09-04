@@ -11,9 +11,9 @@ from spider.utils import six
 from django.core import urlresolvers
 from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
-from spider.utils.fetch_util import  urlFilter, Fetch_WebContent  
+from spider.utils.fetch_util import  urlFilter
+from spider.internet import httpreq
 
-logger = logging.getLogger('django.request')
 
 
 class OpenerMiddleware(object):
@@ -27,11 +27,8 @@ class OpenerMiddleware(object):
        
         if len(settings.REGLIST)==0:
             raise ImproperlyConfigured("REGLIST MUST SET PROPERLY")
-        if not urldict.has_key('openers'):
-            raise Exception('OPENER HAS TO BE SETTED !!!!')
+        
         if not urlFilter.matchurl(**{'regx':settings.REGLIST,'url':self.relink}):
             return ''
-        fetch=Fetch_WebContent()
-        con=fetch.getAllContent(urldict['url'],**urldict)
-        urldict.update({'content':con[0]})
         
+        httpreq.request(urldict)

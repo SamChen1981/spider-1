@@ -20,7 +20,17 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default.
     }
 }
+
+
+#定义那些网址要follow下去
 REGLIST=[]
+#定义哪些网址可以被保存
+SAVE_PAGE_REGLIST=[]
+#MONGOENGINE使用的数据库配置信息
+MONGODB_CONF={}
+#rabbitmq配置信息
+RABBITMQ_QUEUES=[]
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []

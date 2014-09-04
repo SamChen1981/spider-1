@@ -123,15 +123,6 @@ class BaseHandler(object):
             if isinstance(con, tuple) and len(con)==3:
                 break
 
-            
-        content,realurl,localpath=con
-        #保存页面的middleware,遍历所有保存页面的后端，
-        
-       
-        for middleware_method in self.url_savemiddleware:
-            middleware_method(urldict)
-
-                    
         #filter返回一个当前url下一级的所有链接,可以是list 也可以是dict
         #这里可以根据每个网站的不同自定义抓取的方式，若_filter_middleware为None，将报
         #NotImplement异常,这个过滤链后端必须实现的方法有is_filter(),filter()，分别是
@@ -162,7 +153,9 @@ class BaseHandler(object):
         for middleware_method in self._parse_middleware:
             middleware_method(rawlinks)
         
-        
+        #保存页面的middleware,遍历所有保存页面的后端，
+        for middleware_method in self.url_savemiddleware:
+            middleware_method(urldict)    
         
         
             

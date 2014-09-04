@@ -11,7 +11,7 @@ from spider.utils import six
 from django.core import urlresolvers
 from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
-from spider.utils.fetch_util import  urlFilter, Fetch_WebContent  
+from spider.utils.fetch_util import  urlFilter  
 from spider.save_page import Storage
 logger = logging.getLogger('django.request')
 

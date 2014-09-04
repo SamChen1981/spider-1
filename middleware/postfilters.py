@@ -16,14 +16,18 @@ from spider.utils.http import urlquote
 from django.core import urlresolvers
 from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
-from spider.utils.fetch_util import  urlFilter, Fetch_WebContent  
-from spider.utils.fetch_util import db
+from spider.utils.fetch_util import  urlFilter  
+
 logger = logging.getLogger('django.request')
 import os
 def _get_rid_of_dups(relink,rawlinklist):
     links=[]
     I2=[]
-    for rawurl in db.from_iterable(rawlinklist):
+    def from_iterable(cls,iterables):
+        # chain.from_iterable(['ABC', 'DEF']) --> A B C D E F
+        for it in iterables:
+            yield it
+    for rawurl in from_iterable(rawlinklist):
         if isinstance(rawurl,(str,unicode)):
             if not rawurl in I2:
 
