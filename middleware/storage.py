@@ -22,7 +22,7 @@ class StorageMiddleWare(object):
         从用户自定义的opener.py中读取BaseOpener的子类，该类必须实例化，否则报错
     """
     def process_save(self,urldict):
-        docid=Storage().save(urldict['content'])
+        docid=Storage().save()
         urldict.update({'docid':docid})
        
         

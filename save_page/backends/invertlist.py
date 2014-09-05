@@ -11,7 +11,7 @@ from spider.utils import six
 from django.core import urlresolvers
 from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
-from spider.utils.fetch_util import  urlFilter, Fetch_WebContent  
+from spider.utils.fetch_util import  urlFilter  
 import os
 import StringIO
 from spider.ContentResolver.backends.InverseList.mongomodels import webcontent
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 from datetime import datetime
 import time
 import traceback
+
 def saveHTML(*args,**kwargs):
     '''
       保存html.会根据settings.py提供的正则保存
@@ -76,5 +77,6 @@ class SavePageBackend(object):
         则保存所有遇到的页面，如果是[!]，不保存任何页面。
     """
     def saveHTML(self,content,**kwargs):
+        
         filepath=saveHTML(**kwargs)
         return filepath
