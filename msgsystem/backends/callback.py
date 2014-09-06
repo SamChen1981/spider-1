@@ -4,16 +4,12 @@ Created on 2014-9-2
 @author: Administrator
 '''
 import json
-
+import string
 class startfuture(object):
     def __init__(self,_process):
         self._process=_process
     def callback(self,ch, method, properties, body):
-        
-
         print " [x] Received %r" % (body,)
-    #    rule=Acrule(local_dir=local_dir,DOWNLOAD_QUEUE=DOWNLOAD_QUEUE,LOCALPATH_QUEUE=LOCALPATH_QUEUE,downloadtag=downloadtag,saved_field=saved_field,domain=domain,dlregx=dlregx,prregx=prregx,dbregx=dbregx,dbname=dbname,\
-    #host=host,user=user,passwd=passwd,filename='huaqiang_com_contact')
         urlpack=body
         if not urlpack:
             print 'BROKEN'

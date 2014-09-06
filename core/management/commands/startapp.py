@@ -1,6 +1,6 @@
-from django.core.management.base import CommandError
-from django.core.management.templates import TemplateCommand
-from django.utils.importlib import import_module
+from spider.core.management.base import CommandError
+from spider.core.management.templates import TemplateCommand
+from spider.utils.importlib import import_module
 
 
 class Command(TemplateCommand):

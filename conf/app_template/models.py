@@ -1,3 +1,3 @@
-from django.db import models
+from spider.db import model
 
 # Create your models here.

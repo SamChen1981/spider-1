@@ -1,3 +1,4 @@
+#encoding=utf8
 """
 Settings and configuration for Django.
 
@@ -12,11 +13,11 @@ import sys
 import time     # Needed for Windows
 import warnings
 
-from django.conf import global_settings
-from django.core.exceptions import ImproperlyConfigured
-from django.utils.functional import LazyObject, empty
-from django.utils import importlib
-from django.utils import six
+from spider.conf import global_settings
+from spider.core.exceptions import ImproperlyConfigured
+from spider.utils.functional import LazyObject, empty
+from spider.utils import importlib
+from spider.utils import six
 
 ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
 

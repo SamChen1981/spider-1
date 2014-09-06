@@ -7,7 +7,7 @@ import warnings
 
 from spider.core.exceptions import ImproperlyConfigured
 from spider.core.management.base import BaseCommand, CommandError, handle_default_options
-from spider.core.management.color import color_style
+
 from spider.utils.importlib import import_module
 
 # For backwards compatibility: get_version() used to be in this module.
@@ -99,7 +99,8 @@ def get_commands():
     """
     global _commands
     if _commands is None:
-        _commands = dict([(name, 'django.core') for name in find_commands(__path__[0])])
+        print "THE CURRENT PATH IS %s" %__path__
+        _commands = dict([(name, 'spider.core') for name in find_commands(__path__[0])])
 
         # Find the installed apps
         from spider.conf import settings
@@ -245,10 +246,10 @@ class ManagementUtility(object):
                 else:
                     app = app.rpartition('.')[-1]
                 commands_dict[app].append(name)
-            style = color_style()
+            
             for app in sorted(commands_dict.keys()):
                 usage.append("")
-                usage.append(style.NOTICE("[%s]" % app))
+                usage.append("[%s]" % app)
                 for name in sorted(commands_dict[app]):
                     usage.append("    %s" % name)
         return '\n'.join(usage)
@@ -261,6 +262,7 @@ class ManagementUtility(object):
         """
         try:
             app_name = get_commands()[subcommand]
+            print "THE APPNAME IS %s" %app_name
         except KeyError:
             sys.stderr.write("Unknown command: %r\nType '%s help' for usage.\n" % \
                 (subcommand, self.prog_name))

@@ -1,1 +1,4 @@
-# Create your views here.
+# Create your middlewares here.
+
+class AppMiddleWare(object):
+    pass

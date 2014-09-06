@@ -20,7 +20,6 @@ class rabbitmq_fetch(object):
     
         channel.start_consuming()
     
-    #rabbitmq��Ϣ����
     def callback(self,ch, method, properties, body):
         rule=Acrule(local_dir=SETTING.local_dir,DOWNLOAD_QUEUE=SETTING.DOWNLOAD_QUEUE,LOCALPATH_QUEUE=SETTING.LOCALPATH_QUEUE,downloadtag=SETTING.downloadtag,saved_field=SETTING.saved_field,domain=SETTING.domain,dlregx=SETTING.dlregx,prregx=SETTING.prregx,dbregx=SETTING.dbregx,dbname=SETTING.dbname,\
                     host=SETTING.host,user=SETTING.user,passwd=SETTING.passwd,filename='huaqiang_com_contact')
@@ -29,34 +28,22 @@ class rabbitmq_fetch(object):
         print " [x] Received %r" % (body,)
     #    rule=Acrule(local_dir=local_dir,DOWNLOAD_QUEUE=DOWNLOAD_QUEUE,LOCALPATH_QUEUE=LOCALPATH_QUEUE,downloadtag=downloadtag,saved_field=saved_field,domain=domain,dlregx=dlregx,prregx=prregx,dbregx=dbregx,dbname=dbname,\
     #host=host,user=user,passwd=passwd,filename='huaqiang_com_contact')
-    #
-
-    #
         urlpack=body
-
-
         if not urlpack:
             print 'BROKEN'
-
             ch.basic_ack(delivery_tag = method.delivery_tag)
-
-
             return
         count=10
         try:
             count=json.loads(urlpack)['count']
-
         except:
-            print 'urlpack���ִ���\n'
             urlpack=string.join([urlpack,'}'],'')    
         count=count-1
-
         packed=json.loads(urlpack)
         url=json.loads(urlpack)['url']
         print str(count) 
         if count:
             filterc=realfilter(page_save_reglist=SETTING.page_save_reglist,is_javascript=SETTING.is_javascript,save_dir=SETTING.save_dir,LOCALPATH_QUEUE=SETTING.LOCALPATH_QUEUE,dbtable=SETTING.dbtable,local_flag=SETTING.local_flag,count=10,exchange_name=SETTING.exchange_name,urlpack=packed,domain='',reglist=SETTING.reglist,dlregx=SETTING.dlregx)
-
             filterc.processChain(packed)
             rule.processChain(packed)
             ch.basic_ack(delivery_tag = method.delivery_tag)

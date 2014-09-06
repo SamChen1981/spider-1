@@ -10,11 +10,11 @@ from optparse import make_option, OptionParser
 import traceback
 
 import django
-from django.core.exceptions import ImproperlyConfigured
-from django.core.management.color import color_style
-from django.utils.encoding import force_str
-from django.utils.six import StringIO
-
+from spider.core.exceptions import ImproperlyConfigured
+from spider.core.management.color import color_style
+from spider.utils.encoding import force_str
+from spider.utils.six import StringIO
+import traceback
 
 class CommandError(Exception):
     """
@@ -222,6 +222,8 @@ class BaseCommand(object):
             self.execute(*args, **options.__dict__)
         except Exception as e:
             # self.stderr is not guaranteed to be set here
+            
+            traceback.print_exc()
             stderr = getattr(self, 'stderr', OutputWrapper(sys.stderr, self.style.ERROR))
             if options.traceback:
                 stderr.write(traceback.format_exc())
@@ -252,6 +254,10 @@ class BaseCommand(object):
         try:
             if self.requires_model_validation and not options.get('skip_validation'):
                 self.validate()
+            from spider.db.model.loading import get_models
+            from spider.db.model.loading import get_apps
+            get_apps()
+            get_models()
             output = self.handle(*args, **options)
             if output:
                 if self.output_transaction:
@@ -291,6 +297,7 @@ class BaseCommand(object):
         this method.
 
         """
+        
         raise NotImplementedError()
 
 

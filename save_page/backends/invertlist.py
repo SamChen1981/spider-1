@@ -26,45 +26,44 @@ def saveHTML(*args,**kwargs):
     '''
     realurl=kwargs['realurl']
     url=kwargs['url']
-    save_dir=settings.SAVE_DIR
+    
 
     content=kwargs['content']
-    if len(settings.PAGE_SAVE_REGLIST)==0:
+    if len(settings.SAVE_PAGE_REGLIST)==0:
         raise ImproperlyConfigured("REGLIST MUST SET PROPERLY")
-    for r in settings.PAGE_SAVE_REGLIST:
-        if  Rule.matchurl(url=url,regx=r):
-            #以/从最右边分割开始，助剂建立目录建立目录
-            dirstr=url.rsplit('/',1)[0]
-            #去掉http://
-            pattern=re.compile(r'http://')
-            #去掉换行符
-            
-            dirstr=re.sub(pattern,'',dirstr)
-            pattern=re.compile(r'\n')
-            dirstr=re.sub(pattern,'',dirstr)
-            #再根据dirstr以/划分
-            dircomponent=dirstr.split('/')
-            top_dir = os.path.join(os.getcwd(), dirstr)
-            try:
-                if not os.path.exists(top_dir):
-                    os.makedirs(top_dir)
-            except OSError as e:
-                if e.errno == os.errno.EEXIST:
-                    message = "'%s' already exists" % top_dir
-                    print message
-                    logging.info(message) # will not print anything
-                else:
-                    message = e
-                    print message
-                    logging.info(message) 
-                return -1
-        filepath=os.path.join(top_dir,datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d:%H:%M:%S')+'.html')
-        print 'THE SAVE LOCATION IS %s' %filepath
-        output=StringIO.StringIO()
-        output.write(content)
-        webcontent(docid=kwargs['indexid'],sourcefile=output,name=filepath,url=kwargs['url'],\
-                   realurl=kwargs['realurl'],create_date=datetime.strptime(datetime.now(),"%Y-%m-%d:%H:%Y"))
-        webcontent.save(self,validate=True)
+           
+    #以/从最右边分割开始，助剂建立目录建立目录
+    dirstr=url.rsplit('/',1)[0]
+    #去掉http://
+    pattern=re.compile(r'http://')
+    #去掉换行符
+    
+    dirstr=re.sub(pattern,'',dirstr)
+    pattern=re.compile(r'\n')
+    dirstr=re.sub(pattern,'',dirstr)
+    #再根据dirstr以/划分
+    dircomponent=dirstr.split('/')
+    top_dir = os.path.join(os.getcwd(), dirstr)
+    try:
+        if not os.path.exists(top_dir):
+            os.makedirs(top_dir)
+    except OSError as e:
+        if e.errno == os.errno.EEXIST:
+            message = "'%s' already exists" % top_dir
+            print message
+            logging.info(message) # will not print anything
+        else:
+            message = e
+            print message
+            logging.info(message) 
+        return -1
+    filepath=os.path.join(top_dir,datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d:%H:%M:%S')+'.html')
+    print 'THE SAVE LOCATION IS %s' %filepath
+    output=StringIO.StringIO()
+    output.write(content)
+    webcontent(docid=kwargs['indexid'],sourcefile=output,name=filepath,url=kwargs['url'],\
+               realurl=kwargs['realurl'],create_date=datetime.strptime(datetime.now(),"%Y-%m-%d:%H:%Y"))
+    webcontent.save(self,validate=True)
 
         
     

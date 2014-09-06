@@ -1,8 +1,8 @@
-from spider.utils.module_loading import import_string
+from spider.utils.module_loading import import_by_path
 from spider.conf import settings
 from spider.core.exceptions import ImproperlyConfigured
 def load_backend(path):
-    return import_string(path)()
+    return import_by_path(path)()
 
 
 def get_backends():

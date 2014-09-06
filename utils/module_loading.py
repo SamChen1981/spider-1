@@ -2,9 +2,9 @@ import imp
 import os
 import sys
 
-from django.core.exceptions import ImproperlyConfigured
-from django.utils import six
-from django.utils.importlib import import_module
+from spider.core.exceptions import ImproperlyConfigured
+from spider.utils import six
+from spider.utils.importlib import import_module
 
 
 def import_by_path(dotted_path, error_prefix=''):

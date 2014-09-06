@@ -1,3 +1,4 @@
+#encoding=utf8
 import cgi
 import errno
 import mimetypes
@@ -8,6 +9,7 @@ import shutil
 import stat
 import sys
 import tempfile
+from jinja2.utils import import_string
 try:
     from urllib.request import urlretrieve
 except ImportError:     # Python 2
@@ -22,11 +24,31 @@ from spider.utils import archive
 from spider.utils._os import rmtree_errorhandler
 from spider.core.management.base import BaseCommand, CommandError
 from spider.core.management.commands.makemessages import handle_extensions
-
+from spider.utils.module_loading import import_by_path
 
 _drive_re = re.compile('^([a-z]):', re.I)
 _url_drive_re = re.compile('^([a-z])[:|]', re.I)
-
+import re
+#替换文件内容
+def file_repl(old_path,new_path,repl):  
+    input   = open(old_path)  
+    lines   = input.readlines()  
+    input.close()  
+  
+    output  = open(new_path,'w')  
+    for line in lines:  
+        if not line:  
+            break
+          
+        re.sub("{{ project_name }}", repl, line)
+        
+        
+        if "{{ project_name }}" in repl:
+            print line
+            
+        output.write(line)    
+     
+      
 
 class TemplateCommand(BaseCommand):
     """
@@ -117,15 +139,15 @@ class TemplateCommand(BaseCommand):
         from spider.conf import settings
         if not settings.configured:
             settings.configure()
-
+        #获取要安装到用户工程目录下的模版的位置
         template_dir = self.handle_template(options.get('template'),
                                             base_subdir)
         prefix_length = len(template_dir) + 1
-
         for root, dirs, files in os.walk(template_dir):
 
             path_rest = root[prefix_length:]
             relative_dir = path_rest.replace(base_name, name)
+            print "relative_dir %s" %relative_dir
             if relative_dir:
                 target_dir = path.join(top_dir, relative_dir)
                 if not path.exists(target_dir):
@@ -150,13 +172,14 @@ class TemplateCommand(BaseCommand):
 
                 # Only render the Python files, as we don't want to
                 # accidentally render Django templates files
-                with open(old_path, 'rb') as template_file:
-                    content = template_file.read()
-                if filename.endswith(extensions) or filename in extra_files:
-                    content = content.decode('utf-8')
-                   
-                with open(new_path, 'wb') as new_file:
-                    new_file.write(content)
+                file_repl(old_path,new_path,name) 
+                
+                #with open(old_path, 'rb') as template_file:
+                    
+                #    content = template_file.read()                    
+                    
+                #with open(new_path, 'wb') as new_file:
+                #    new_file.write(content)
 
                 if self.verbosity >= 2:
                     self.stdout.write("Creating %s\n" % new_path)

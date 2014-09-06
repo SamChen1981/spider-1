@@ -3,7 +3,7 @@ Created on 2014年9月2日
 
 @author: mu
 '''
-from spider.save_page import Storage
+from spider.save_page import PageSave
 from HTMLParser import HTMLParser
 import StringIO  
 from spider.ContentResolver.backends.InverseList.pylucene_test import luceneIndexer
