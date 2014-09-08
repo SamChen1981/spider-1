@@ -9,7 +9,7 @@ import sys
 from optparse import make_option, OptionParser
 import traceback
 
-import django
+
 from spider.core.exceptions import ImproperlyConfigured
 from spider.core.management.color import color_style
 from spider.utils.encoding import force_str
@@ -254,10 +254,7 @@ class BaseCommand(object):
         try:
             if self.requires_model_validation and not options.get('skip_validation'):
                 self.validate()
-            from spider.db.model.loading import get_models
-            from spider.db.model.loading import get_apps
-            get_apps()
-            get_models()
+            
             output = self.handle(*args, **options)
             if output:
                 if self.output_transaction:

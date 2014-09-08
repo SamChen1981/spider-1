@@ -1,3 +1,4 @@
+#encoding=utf8
 from __future__ import unicode_literals
 
 import logging
@@ -5,21 +6,21 @@ import sys
 import types
 import os
 
-from django import http
-from django.conf import settings
-from django.core import exceptions
-from django.core import urlresolvers
-from django.core import signals
-from django.utils.encoding import force_text
-from django.utils.importlib import import_module
-from django.utils import six
-from django.views import debug
+
+from spider.conf import settings
+
+
+
+from spider.utils.encoding import force_text
+from spider.utils.importlib import import_module
+from spider.utils import six
+
 from spider.utils.module_loading import import_by_path
 from spider.core.exceptions import ImproperlyConfigured
 from spider.staging import staging
 from spider.msgsystem import msgsys
 
-logger = logging.getLogger('django.request')
+
 import re
 def _(links):
     '''
@@ -39,7 +40,7 @@ def _(links):
                     pattern=re.compile(r'(?:http.+|www.+).+')
                     match=re.search(pattern,message)
                     if not match:
-                        message=os.path.join(settings.domain,message)
+                        message=os.path.join(settings.DOMAIN,message)
         #message=urllib.quote(message)
                     
                     if not staging.checkvisited(message):
@@ -52,10 +53,7 @@ def _(links):
             
 class BaseHandler(object):
     # Changes that are always applied to a response (in this order).
-    response_fixes = [
-        http.fix_location_header,
-        http.conditional_content_removal,
-    ]
+    
 
     def __init__(self):
         self._request_middleware =_opener_middleware=self._view_middleware = self._template_response_middleware = self._response_middleware = self._exception_middleware = None
@@ -72,6 +70,16 @@ class BaseHandler(object):
         self._exception_middleware = []
         self._postfilter_middleware=[]
         request_middleware = []
+        
+        from spider.middleware.loading import get_middlewares,get_apps
+        app_mods=get_apps()
+        if app_mods:
+            for app_mod in app_mods:
+                middlewares=get_middlewares(app_mod)        
+                for middleware in middlewares:
+                    fullname=app_mod.__name__+'.'+middleware.__module__+'.'+middleware.__name__
+                    settings.MIDDLEWARE_CLASSES.append(fullname)        
+        
         for middleware_path in settings.MIDDLEWARE_CLASSES:
             try:
                 mw_module, mw_classname = middleware_path.rsplit('.', 1)
@@ -92,15 +100,15 @@ class BaseHandler(object):
 
           
             if hasattr(mw_instance, 'process_filter'):
-                self._filter_middleware.append(mw_instance.process_view)
+                self._filter_middleware.append(mw_instance.process_filter)
             if hasattr(mw_instance, 'process_postfilter'):
-                self._postfilter_middleware.append(mw_instance.process_view)
+                self._postfilter_middleware.append(mw_instance.process_postfilter)
             if hasattr(mw_instance, 'process_preopen'):
                 self.url_preopenermiddleware.append(mw_instance.process_preopen)      
             if hasattr(mw_instance, 'process_open'):
                 self.url_openermiddleware.append(mw_instance.process_open)   
             if hasattr(mw_instance, 'process_parser'):
-                self.url_parserermiddleware.append(mw_instance.process_parse)   
+                self.url_parserermiddleware.append(mw_instance.process_parser)   
             if hasattr(mw_instance, 'process_save'):
                 self.url_savemiddleware.append(mw_instance.process_save)   
                             
@@ -110,7 +118,7 @@ class BaseHandler(object):
     def go_get_it(self,urldict):
         #Apply opener middleware
         
-        urldict.update({'openers':self.url_openermiddleware})
+        
         for middleware_method in self.url_preopenermiddleware:
             middleware_method(urldict)
         for middleware_method in self.url_openermiddleware:
@@ -132,10 +140,9 @@ class BaseHandler(object):
         #1.对相同链接进行去重
         #2.其他自定义的操作
         
-        if len(self._postfilter_middleware) == 0:
-            raise NotImplementedError()
+
         for middleware_method in self._postfilter_middleware:
-            middleware_method(rawlinks)
+            middleware_method(urldict,rawlinks)
         
         #将上面的rawlinks，就是下一级要抓取的链接加入到队列中和暂存区
         _(rawlinks)

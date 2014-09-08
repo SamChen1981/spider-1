@@ -47,9 +47,10 @@ class LazySettings(LazyObject):
                 % (desc, ENVIRONMENT_VARIABLE))
 
         self._wrapped = Settings(settings_module)
-        self._configure_logging()
-
+        #self._configure_logging()
+        
     def __getattr__(self, name):
+        
         if self._wrapped is empty:
             self._setup(name)
         return getattr(self._wrapped, name)
@@ -90,13 +91,20 @@ class LazySettings(LazyObject):
         parameter sets where to retrieve any unspecified values from (its
         argument must support attribute access (__getattr__)).
         """
+        
         if self._wrapped is not empty:
             raise RuntimeError('Settings already configured.')
+        try:
+            raise Exception("it's ")
+        except:
+            import traceback
+            traceback.print_exc()
+            sys.exit(0)
         holder = UserSettingsHolder(default_settings)
         for name, value in options.items():
             setattr(holder, name, value)
         self._wrapped = holder
-        self._configure_logging()
+        #self._configure_logging()
 
     @property
     def configured(self):
@@ -149,9 +157,11 @@ class Settings(BaseSettings):
                     setting_value = (setting_value,) # In case the user forgot the comma.
                 setattr(self, setting, setting_value)
 
+        '''        
         if not self.SECRET_KEY:
             raise ImproperlyConfigured("The SECRET_KEY setting must not be empty.")
-
+        
+        #TIME_ZONE要设置
         if hasattr(time, 'tzset') and self.TIME_ZONE:
             # When we can, attempt to validate the timezone. If we can't find
             # this file, no check happens and it's harmless.
@@ -163,7 +173,7 @@ class Settings(BaseSettings):
             # we don't do this unconditionally (breaks Windows).
             os.environ['TZ'] = self.TIME_ZONE
             time.tzset()
-
+        '''
 
 class UserSettingsHolder(BaseSettings):
     """

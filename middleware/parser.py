@@ -44,11 +44,13 @@ class ParserMiddleware(object):
         openerMiddleware是用来调用打开一个url所需要的配置
         从用户自定义的opener.py中读取BaseOpener的子类，该类必须实例化，否则报错
     """
-    def process_parse(self,urldict,rawlinks):
+    def process_parser(self,urldict,rawlinks):
         
        
         
         linksdict=_get_rid_of_dups(rawlinks)
+        content_parser.is_parser(self, urldict)
+        content_parser.parser(self,urldict)
         return linksdict
     
        

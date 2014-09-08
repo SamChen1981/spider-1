@@ -1,3 +1,4 @@
+#encoding=utf8
 import imp
 import os
 import sys
@@ -33,7 +34,11 @@ def import_by_path(dotted_path, error_prefix=''):
 
 
 def module_has_submodule(package, module_name):
-    """See if 'module' is in 'package'."""
+    """See if 'module' is in 'package'.
+        package就是app的顶层目录，即在settings.INSTALLED_APP里面设置的
+        即name 类似borrow.models
+    """
+    
     name = ".".join([package.__name__, module_name])
     try:
         # None indicates a cached miss; see mark_miss() in Python/import.c.
@@ -41,6 +46,7 @@ def module_has_submodule(package, module_name):
     except KeyError:
         pass
     try:
+        
         package_path = package.__path__   # No __path__, then not a package.
     except AttributeError:
         # Since the remainder of this function assumes that we're dealing with

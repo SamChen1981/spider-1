@@ -40,7 +40,7 @@ def file_repl(old_path,new_path,repl):
         if not line:  
             break
           
-        re.sub("{{ project_name }}", repl, line)
+        line=re.sub("{{ project_name }}", repl, line)
         
         
         if "{{ project_name }}" in repl:

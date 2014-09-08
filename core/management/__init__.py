@@ -105,8 +105,6 @@ def get_commands():
         # Find the installed apps
         from spider.conf import settings
         try:
-            if not settings.configured:
-                settings.configure()
             apps = settings.INSTALLED_APPS
         except ImproperlyConfigured:
             # Still useful for commands that do not require functional settings,

@@ -1,3 +1,4 @@
+#encoding=utf8
 '''
 Created on 2014年9月5日
 
@@ -10,31 +11,12 @@ from spider.conf import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
-class modelbase(type):
-    def __new__(cls,name,bases,attrs):
-        Base = declarative_base()
-        if not hasattr(attrs,"__tablename__"):
-            attrs["__tablename__"]=name
-        def __repr__(self):
-            return "<User(name='%s', fullname='%s', password='%s')>" % (name,name,name)
-        if not hasattr(attrs,"__repr__"):
-            attrs["__repr__"]=__repr__
-        if not Base in bases:
-            bases.append(Base)
-        name=settings.DATABASE['name']
-        host=settings.DATABASE['host']
-        username=settings.DATABASE['username']
-        port=settings.DATABASE['port']
-        psw=settings.DATABASE['password']
-        database=settings.DATABASE['database']
-        conf_str=name+"://"+host+":"+username+"@"+host+":"+port+"/"+database
-        engine = create_engine(conf_str, echo=True)
-        
-        if not hasattr(attrs,"objects"):
-            attrs["objects"]=basemanager(engine,Base)
-        return Base.__class__.__new__(name.bases,attrs)
-        
-def basemanager(object):
+from spider.db.model.loading import register_models
+import sys
+Base = declarative_base()
+
+print dir(Base)
+class basemanager(object):
     def __init__(self,engine,Base):
         self.Base=Base
         self.engine=engine
@@ -46,11 +28,54 @@ def basemanager(object):
         session=self.Session()
         return session
     
+class modelbase(type):
+    def __new__(cls,name,bases,attrs):
+        
+        if not hasattr(attrs,"__tablename__"):
+            attrs["__tablename__"]=name
+        def __repr__(self):
+            return "<User(name='%s', fullname='%s', password='%s')>" % (name,name,name)
+        if not hasattr(attrs,"__repr__"):
+            attrs["__repr__"]=__repr__
+    
+        for dbconf in settings.DATABASES:
+          
+            if dbconf['alisa'] =='test1':
+                
+                break
+        conf_dict={}
+        conf_dict.update({'host':dbconf['host'],'user':dbconf['user'],\
+                        'passwd':dbconf['passwd'],'db':dbconf['db'],
+                        'port':3306})
+        
+        engine = create_engine("mysql://"+dbconf['user']+":"+str(dbconf['passwd'])+"@"+dbconf['host']+"/"+dbconf['db'],
+                                            encoding='utf8', echo=True)        
+        #engine = create_engine('mysql',conf_dict, echo=True)
+        
+        if not hasattr(attrs,"objects"):
+            
+            attrs["objects"]=basemanager(engine,Base)
+        print name
+        print bases
+        print super(modelbase,cls)
+        del attrs['__metaclass__']
+        new_class=type.__new__(cls,name,bases,attrs)
+        
+        model_module = sys.modules[new_class.__module__]
+        
+        register_models(model_module.__package__, new_class)
+
     
     
 
-class model(object):
+class model(Base):
     __metaclass__=modelbase
+    
     def save(self):
         session=self.__class__.objects.get_session()
         session.add(self)
+    '''
+    def autosave(self,urldict):
+        for k,v in urldict.items():
+            getattr(self.__class__,k)
+    '''

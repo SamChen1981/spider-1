@@ -1,13 +1,15 @@
+#encoding=utf8
 "Utilities for loading models and the modules that contain them."
+from sqlalchemy.ext.declarative import declarative_base
 
-from spider.conf import settings
+
 from spider.core.exceptions import ImproperlyConfigured
 from spider.utils.datastructures import SortedDict
 from spider.utils.importlib import import_module
 from spider.utils.module_loading import module_has_submodule
 from spider.utils._os import upath
-from django.utils import six
-
+from spider.utils import six
+from spider.conf import settings
 import imp
 import sys
 import os
@@ -66,6 +68,7 @@ class AppCache(object):
         try:
             if self.loaded:
                 return
+            
             for app_name in settings.INSTALLED_APPS:
                 if app_name in self.handled:
                     continue
@@ -80,7 +83,7 @@ class AppCache(object):
     def _label_for(self, app_mod):
         """
         Return app_label for given models module.
-
+        app的名字
         """
         return app_mod.__name__.split('.')[-2]
 
@@ -94,11 +97,12 @@ class AppCache(object):
         app_module = import_module(app_name)
         try:
             models = import_module('.models', app_name)
+            middlewares = import_module('.middlewares', app_name)
         except ImportError:
             self.nesting_level -= 1
             # If the app doesn't have a models module, we can just ignore the
             # ImportError and return no models for it.
-            if not module_has_submodule(app_module, 'models'):
+            if not module_has_submodule(app_module, 'models') or not module_has_submodule(app_module, 'middlewares') :
                 return None
             # But if the app does have a models module, we need to figure out
             # whether to suppress or propagate the error. If can_postpone is
@@ -147,6 +151,7 @@ class AppCache(object):
         """
         self._populate()
         imp.acquire_lock()
+        
         try:
             for app_name in settings.INSTALLED_APPS:
                 if app_label == app_name.split('.')[-1]:
@@ -165,7 +170,8 @@ class AppCache(object):
         "Returns the map of known problems with the INSTALLED_APPS."
         self._populate()
         return self.app_errors
-
+    
+    
     def get_models(self, app_mod=None,
                    include_auto_created=False, include_deferred=False,
                    only_installed=True, include_swapped=False):
@@ -189,6 +195,9 @@ class AppCache(object):
         included in the list of models. However, if you specify
         include_swapped, they will be.
         """
+        """
+            app_mod is models.py
+        """
         cache_key = (app_mod, include_auto_created, include_deferred, only_installed, include_swapped)
         try:
             return self._get_models_cache[cache_key]
@@ -197,23 +206,28 @@ class AppCache(object):
         self._populate()
         if app_mod:
             if app_mod in self.app_store:
-                app_list = [self.app_models.get(self._label_for(app_mod),
-                                                SortedDict())]
+                app_list = [self.app_models.get(self._label_for(app_mod),SortedDict())]
             else:
                 app_list = []
         else:
+            #获取全部已安装的应用(app)的的的所有的model,不是models.py ,是所有app里面的models.py里面的
+            #内容
+            #通过app的名字查找到在该app 包下面所有的model
             if only_installed:
                 app_list = [self.app_models.get(app_label, SortedDict())
                             for app_label in six.iterkeys(self.app_labels)]
             else:
+                #"only_install未指定"
                 app_list = six.itervalues(self.app_models)
         model_list = []
         for app in app_list:
+            #app_list: [appname:{"model名1"：model模块1,'model名2':'model模块2'...}]
+            #获取每个app下面所有的models字典{"model名"：model模块}形式
             model_list.extend(
+                #取得所有模块
                 model for model in app.values()
-                if ((not model._deferred or include_deferred) and
-                    (not model._meta.auto_created or include_auto_created) and
-                    (not model._meta.swapped or include_swapped))
+                #没有那么多限制条件你妈逼的
+
             )
         self._get_models_cache[cache_key] = model_list
         return model_list
@@ -237,23 +251,26 @@ class AppCache(object):
         Register a set of models as belonging to an app.
         """
         for model in models:
-            # Store as 'name: model' pair in a dictionary
-            # in the app_models dictionary
-            model_name = model._meta.object_name.lower()
-            model_dict = self.app_models.setdefault(app_label, SortedDict())
-            if model_name in model_dict:
-                # The same model may be imported via different paths (e.g.
-                # appname.models and project.appname.models). We use the source
-                # filename as a means to detect identity.
-                fname1 = os.path.abspath(upath(sys.modules[model.__module__].__file__))
-                fname2 = os.path.abspath(upath(sys.modules[model_dict[model_name].__module__].__file__))
-                # Since the filename extension could be .py the first time and
-                # .pyc or .pyo the second time, ignore the extension when
-                # comparing.
-                if os.path.splitext(fname1)[0] == os.path.splitext(fname2)[0]:
-                    continue
-            model_dict[model_name] = model
-        self._get_models_cache.clear()
+            Base = declarative_base()
+            if issubclass(model,Base):
+
+                # Store as 'name: model' pair in a dictionary
+                # in the app_models dictionary
+                model_name = model._meta.object_name.lower()
+                model_dict = self.app_models.setdefault(app_label, SortedDict())
+                if model_name in model_dict:
+                    # The same model may be imported via different paths (e.g.
+                    # appname.models and project.appname.models). We use the source
+                    # filename as a means to detect identity.
+                    fname1 = os.path.abspath(upath(sys.modules[model.__module__].__file__))
+                    fname2 = os.path.abspath(upath(sys.modules[model_dict[model_name].__module__].__file__))
+                    # Since the filename extension could be .py the first time and
+                    # .pyc or .pyo the second time, ignore the extension when
+                    # comparing.
+                    if os.path.splitext(fname1)[0] == os.path.splitext(fname2)[0]:
+                        continue
+                model_dict[model_name] = model
+                self._get_models_cache.clear()
 
 cache = AppCache()
 

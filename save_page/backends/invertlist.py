@@ -14,7 +14,7 @@ from spider.core.exceptions import ImproperlyConfigured
 from spider.utils.fetch_util import  urlFilter  
 import os
 import StringIO
-from spider.ContentResolver.backends.InverseList.mongomodels import webcontent
+from spider.save_page.backends.mongomodels import webcontent
 logger = logging.getLogger(__name__)
 from datetime import datetime
 import time
@@ -29,8 +29,7 @@ def saveHTML(*args,**kwargs):
     
 
     content=kwargs['content']
-    if len(settings.SAVE_PAGE_REGLIST)==0:
-        raise ImproperlyConfigured("REGLIST MUST SET PROPERLY")
+
            
     #以/从最右边分割开始，助剂建立目录建立目录
     dirstr=url.rsplit('/',1)[0]
@@ -61,6 +60,7 @@ def saveHTML(*args,**kwargs):
     print 'THE SAVE LOCATION IS %s' %filepath
     output=StringIO.StringIO()
     output.write(content)
+    
     webcontent(docid=kwargs['indexid'],sourcefile=output,name=filepath,url=kwargs['url'],\
                realurl=kwargs['realurl'],create_date=datetime.strptime(datetime.now(),"%Y-%m-%d:%H:%Y"))
     webcontent.save(self,validate=True)
@@ -77,5 +77,5 @@ class SavePageBackend(object):
     """
     def saveHTML(self,content,**kwargs):
         
-        filepath=saveHTML(**kwargs)
-        return filepath
+        saveHTML(**kwargs)
+        

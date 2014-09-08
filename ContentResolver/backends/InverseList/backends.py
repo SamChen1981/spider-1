@@ -7,7 +7,7 @@ from spider.save_page import PageSave
 from HTMLParser import HTMLParser
 import StringIO  
 from spider.ContentResolver.backends.InverseList.pylucene_test import luceneIndexer
-from spider.ContentResolver.backends.InverseList.mongomodels import webcontent
+
 
 from datetime import datetime
 class MLStripper(HTMLParser):
@@ -31,7 +31,7 @@ def _get_rid_of_html(content):
     return strip_tags(content)
 class Inverted_List(object):
     def is_parser(self,urldict):
-        pass
+        return True
     def parser(self,urldict):
         '''   
             解析成倒排列表
@@ -43,5 +43,4 @@ class Inverted_List(object):
         output=StringIO.StringIO(content)
         docid=luceneIndexer([output])
         urldict.update({'indexid':docid})
-    def save(self,urldict):
-        pass
+

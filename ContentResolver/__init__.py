@@ -19,8 +19,6 @@ class content_parser(object):
             self.backend=backend
             break
     def is_parser(self,item):
-        self.backend.is_parser(item)
-    def parser(self):
-        return self.backend.parser()
-    def save(self):
-        return self.backend.save()
+        return self.backend.is_parser(item)
+    def parser(self,urldict):
+        self.backend.parser(urldict)

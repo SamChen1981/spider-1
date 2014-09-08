@@ -13,7 +13,7 @@ from fetch_util import *
 from spider.core.exceptions import ImproperlyConfigured
 from spider.utils.fetch_util import  urlFilter  
 from spider.save_page import PageSave
-logger = logging.getLogger('django.request')
+
 
 
 class StorageMiddleWare(object):
@@ -22,8 +22,8 @@ class StorageMiddleWare(object):
         从用户自定义的opener.py中读取BaseOpener的子类，该类必须实例化，否则报错
     """
     def process_save(self,urldict):
-        docid=PageSave().save(urldict)
-        urldict.update({'docid':docid})
+        PageSave().save(urldict)
+        
        
         
         
