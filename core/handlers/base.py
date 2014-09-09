@@ -70,7 +70,8 @@ class BaseHandler(object):
         self._exception_middleware = []
         self._postfilter_middleware=[]
         request_middleware = []
-        
+        self.url_preopenermiddleware=[]
+        self.url_openermiddleware=[]
         from spider.middleware.loading import get_middlewares,get_apps
         app_mods=get_apps()
         if app_mods:

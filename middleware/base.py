@@ -1,3 +1,4 @@
+#encoding=utf8
 from spider.middleware.loading import register_middlewares
 class middleware_base(type):
     '''本类就帮助创建middleware时进行自动注册'''

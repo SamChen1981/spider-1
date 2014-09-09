@@ -16,6 +16,7 @@ class twisted_client(object):
             self.err
     def request(self):
         url=self.urldict['urldict']
+        
         getPage(url).addCallbacks(
         callback=self.callback,
         errback=self.errback)

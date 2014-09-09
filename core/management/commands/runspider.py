@@ -11,5 +11,6 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         
-        CRAWLHandler(options['spidername'])
+        crawler=CRAWLHandler(options['spidername'])
+        crawler()
             

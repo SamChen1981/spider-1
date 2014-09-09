@@ -31,4 +31,4 @@ class OpenerMiddleware(object):
         if not urlFilter.matchurl(**{'regx':settings.REGLIST,'url':self.relink}):
             return ''
         
-        httpreq.request(urldict)
+        httpreq().request(urldict)

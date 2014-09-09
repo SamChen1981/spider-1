@@ -12,11 +12,12 @@ class CRAWLHandler(BaseHandler):
     def __init__(self,spidername):
         self.spidername=spidername
     def __call__(self):
+        
         urldict={}
         
         urldict.update({'app':self.spidername})
         
-        
+        self.load_middleware()
         callback=self.go_get_it(urldict)
         msgsys().consumer(callback)
         

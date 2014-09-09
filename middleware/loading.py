@@ -7,7 +7,7 @@ from spider.core.exceptions import ImproperlyConfigured
 from spider.utils.datastructures import SortedDict
 
 from spider.utils._os import upath
-from spider.db.model.loading import get_app ,get_apps,_populate,app_cache_ready,load_app
+from spider.db.model.loading import AppCache,get_app ,get_apps,app_cache_ready,load_app,get_app_errors
 from django.utils import six
 
 import sys
@@ -17,7 +17,7 @@ __all__ = ('get_apps', 'get_app', 'get_models', 'get_model', 'register_models',
         'load_app', 'app_cache_ready')
 
 
-class AppCache(object):
+class MiddleWareCache(AppCache):
     """
     A cache that stores installed applications and their models. Used to
     provide reverse-relations and for app introspection (e.g. admin).
@@ -26,7 +26,7 @@ class AppCache(object):
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
     __shared_state = dict(
         # Keys of app_store are the model modules for each application.
-        app_store=SortedDict(),
+        _store=SortedDict(),
 
         # Mapping of installed app_labels to model modules for that app.
         app_labels={},
@@ -61,6 +61,42 @@ class AppCache(object):
         return self.loaded
 
 
+    def load_app(self, app_name, can_postpone=False):
+        """
+        Loads the app with the provided fully qualified name, and returns the
+        model module.
+        """
+        self.handled[app_name] = None
+        self.nesting_level += 1
+        app_module = import_module(app_name)
+        try:
+            
+            middlewares = import_module('.middlewares', app_name)
+        except ImportError:
+            self.nesting_level -= 1
+            # If the app doesn't have a models module, we can just ignore the
+            # ImportError and return no models for it.
+            if not module_has_submodule(app_module, 'models') or not module_has_submodule(app_module, 'middlewares') :
+                return None
+            # But if the app does have a models module, we need to figure out
+            # whether to suppress or propagate the error. If can_postpone is
+            # True then it may be that the package is still being imported by
+            # Python and the models module isn't available yet. So we add the
+            # app to the postponed list and we'll try it again after all the
+            # recursion has finished (in populate). If can_postpone is False
+            # then it's time to raise the ImportError.
+            else:
+                if can_postpone:
+                    self.postponed.append(app_name)
+                    return None
+                else:
+                    raise
+
+        self.nesting_level -= 1
+        if middlewares not in self.app_store:
+            self.app_store[middlewares] = len(self.app_store)
+            self.app_labels_middleware[app_name] = middlewares
+        return models
 
     
     
@@ -164,15 +200,15 @@ class AppCache(object):
                 model_dict[model_name] = model
                 self._get_models_cache.clear()
 
-cache = AppCache()
+cache = MiddleWareCache()
 
 # These methods were always module level, so are kept that way for backwards
 # compatibility.
-get_apps = cache.get_apps
-get_app = cache.get_app
-get_app_errors = cache.get_app_errors
+
+
+
 get_middlewares = cache.get_middlewares
 get_middleware = cache.get_middleware
 register_middlewares = cache.register_middlewares
-load_app = cache.load_app
-app_cache_ready = cache.app_cache_ready
+
+

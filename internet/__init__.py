@@ -9,7 +9,7 @@ def load_backend(path):
 
 def get_backends():
     backends = []
-    for backend_path in settings.SAVE_PAGE_BACKENDS:
+    for backend_path in settings.INTERNET_BACKENDS:
         backends.append(load_backend(backend_path))
     if not backends:
         raise ImproperlyConfigured('No authentication backends have been defined. Does AUTHENTICATION_BACKENDS contain anything?')

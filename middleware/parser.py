@@ -49,8 +49,8 @@ class ParserMiddleware(object):
        
         
         linksdict=_get_rid_of_dups(rawlinks)
-        content_parser.is_parser(self, urldict)
-        content_parser.parser(self,urldict)
+        content_parser().is_parser(self, urldict)
+        content_parser().parser(self,urldict)
         return linksdict
     
        

@@ -9,7 +9,7 @@ import sys
 from optparse import make_option, OptionParser
 import traceback
 
-
+import spider
 from spider.core.exceptions import ImproperlyConfigured
 from spider.core.management.color import color_style
 from spider.utils.encoding import force_str
@@ -161,7 +161,7 @@ class BaseCommand(object):
 
     # Configuration shortcuts that alter various logic.
     can_import_settings = True
-    requires_model_validation = True
+    requires_model_validation = False
     output_transaction = False  # Whether to wrap the output in a "BEGIN; COMMIT;"
 
     def __init__(self):
@@ -174,7 +174,7 @@ class BaseCommand(object):
         override this method.
 
         """
-        return django.get_version()
+        return spider.get_version()
 
     def usage(self, subcommand):
         """
@@ -246,10 +246,7 @@ class BaseCommand(object):
         self.stdout = OutputWrapper(options.get('stdout', sys.stdout))
         self.stderr = OutputWrapper(options.get('stderr', sys.stderr), self.style.ERROR)
 
-        if self.can_import_settings:
-            from django.utils import translation
-            saved_lang = translation.get_language()
-            translation.activate('en-us')
+        
 
         try:
             if self.requires_model_validation and not options.get('skip_validation'):
