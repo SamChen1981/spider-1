@@ -5,6 +5,7 @@ spider
 
 1.功能:
 
+
     1.内置一个pylucene作为默认的搜索引擎 
     
     2.添加web搜索功能,支持WSGI的协议(Gevent实现)
@@ -18,7 +19,9 @@ spider
 
 2.基本架构图:
 
+
 3.使用
+
        3.1下载后配置环境变量, 例如export $PATH= $PATH:/PATH/TO/SPIDER_DIRECTORY/bin:/PATH/TO/SPIDER_DIRECTORY
        
        3.2 新建一个工程 spider-admin.py startproject test 和新建一个app : spider-admin.py startapp testapp 
