@@ -26,7 +26,7 @@ spider
        
        3.2 新建一个工程 spider-admin.py startproject test 和新建一个app : spider-admin.py startapp testapp 
        
-       3.3 建立一个model,在app目录下的models.py中按照 http://www.ibm.com/developerworks/cn/aix/library/au-sqlalchemy/所示的例子建立model
+       3.3 建立一个model,在app目录下的models.py中按照 http://www.ibm.com/developerworks/cn/aix/library/au-sqlalchemy/所示的例子建立model,将app 的名称加入到工程目录下的settings.py中的INSTALLED_APPS里面
 
 
 
