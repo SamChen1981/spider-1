@@ -18,6 +18,7 @@ spider
 
 
 2.基本架构图:
+file:///home/mu/%E4%B8%8B%E8%BC%89/spdier%255Fflow.png
 
 
 3.使用
