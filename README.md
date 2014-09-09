@@ -14,11 +14,12 @@ spider
     
     4.可配置的数据库后端，可以自由选择数据库存储方式，内置orm系统,分别是SQLAlchemy和mongoengine，可以自行配置
     
-    5.可配置网络接口后端，默认采用twisted后端
+    5.可配置网络访问后端，默认采用异步框架twisted作为网络访问的后端
 
 
 2.基本架构图:
-file:///home/mu/%E4%B8%8B%E8%BC%89/spdier%255Fflow.png
+
+    
 
 
 3.使用
