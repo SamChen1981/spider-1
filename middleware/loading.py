@@ -26,80 +26,31 @@ class MiddleWareCache(AppCache):
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66531.
     __shared_state = dict(
         # Keys of app_store are the model modules for each application.
-        _store=SortedDict(),
-
-        # Mapping of installed app_labels to model modules for that app.
-        app_labels={},
-
+        
+        
         # Mapping of app_labels to a dictionary of model names to model code.
         # May contain apps that are not installed.
-        app_models=SortedDict(),
+        app_middlewares=SortedDict(),
 
         # Mapping of app_labels to errors raised when trying to import the app.
-        app_errors={},
+        
 
         # -- Everything below here is only used when populating the cache --
-        loaded=False,
-        handled={},
-        postponed=[],
-        nesting_level=0,
-        _get_models_cache={},
+        
+        
+        
+        
+        _get_middlewares_cache={},
     )
 
     def __init__(self):
+        '''把父类有的子类没有的类属性加入到之类中'''
+        for k,v in super(MiddleWareCache,self).__shared_state:
+            if not self.__shared_state.has_key(k):
+                self.__shared_state.update({k,v})
         self.__dict__ = self.__shared_state
+        
 
-
-
-    def app_cache_ready(self):
-        """
-        Returns true if the model cache is fully populated.
-
-        Useful for code that wants to cache the results of get_models() for
-        themselves once it is safe to do so.
-        """
-        return self.loaded
-
-
-    def load_app(self, app_name, can_postpone=False):
-        """
-        Loads the app with the provided fully qualified name, and returns the
-        model module.
-        """
-        self.handled[app_name] = None
-        self.nesting_level += 1
-        app_module = import_module(app_name)
-        try:
-            
-            middlewares = import_module('.middlewares', app_name)
-        except ImportError:
-            self.nesting_level -= 1
-            # If the app doesn't have a models module, we can just ignore the
-            # ImportError and return no models for it.
-            if not module_has_submodule(app_module, 'models') or not module_has_submodule(app_module, 'middlewares') :
-                return None
-            # But if the app does have a models module, we need to figure out
-            # whether to suppress or propagate the error. If can_postpone is
-            # True then it may be that the package is still being imported by
-            # Python and the models module isn't available yet. So we add the
-            # app to the postponed list and we'll try it again after all the
-            # recursion has finished (in populate). If can_postpone is False
-            # then it's time to raise the ImportError.
-            else:
-                if can_postpone:
-                    self.postponed.append(app_name)
-                    return None
-                else:
-                    raise
-
-        self.nesting_level -= 1
-        if middlewares not in self.app_store:
-            self.app_store[middlewares] = len(self.app_store)
-            self.app_labels_middleware[app_name] = middlewares
-        return models
-
-    
-    
     def get_middlewares(self, app_mod=None,
                    include_auto_created=False, include_deferred=False,
                    only_installed=True, include_swapped=False):
@@ -128,13 +79,13 @@ class MiddleWareCache(AppCache):
         """
         cache_key = (app_mod,)
         try:
-            return self._get_models_cache[cache_key]
+            return self._get_middlewares_cache[cache_key]
         except KeyError:
             pass
         self._populate()
         if app_mod:
             if app_mod in self.app_store:
-                app_list = [self.app_models.get(self._label_for(app_mod),SortedDict())]
+                app_list = [self.app_middlewares.get(self._label_for(app_mod),SortedDict())]
             else:
                 app_list = []
         else:
@@ -142,11 +93,11 @@ class MiddleWareCache(AppCache):
             #内容
             #通过app的名字查找到在该app 包下面所有的model
             if only_installed:
-                app_list = [self.app_models.get(app_label, SortedDict())
+                app_list = [self.app_middlewares.get(app_label, SortedDict())
                             for app_label in six.iterkeys(self.app_labels)]
             else:
                 #"only_install未指定"
-                app_list = six.itervalues(self.app_models)
+                app_list = six.itervalues(self.app_middlewares)
         model_list = []
         for app in app_list:
             #app_list: [appname:{"model名1"：model模块1,'model名2':'model模块2'...}]
@@ -157,7 +108,7 @@ class MiddleWareCache(AppCache):
                 #没有那么多限制条件你妈逼的
 
             )
-        self._get_models_cache[cache_key] = model_list
+        self._get_middlewares_cache[cache_key] = model_list
         return model_list
 
     def get_middleware(self, app_label, model_name,
@@ -172,7 +123,7 @@ class MiddleWareCache(AppCache):
             self._populate()
         if only_installed and app_label not in self.app_labels:
             return None
-        return self.app_models.get(app_label, SortedDict()).get(model_name.lower())
+        return self.app_middlewares.get(app_label, SortedDict()).get(model_name.lower())
 
     def register_middlewares(self, app_label, *models):
         """
@@ -185,7 +136,7 @@ class MiddleWareCache(AppCache):
                 # Store as 'name: model' pair in a dictionary
                 # in the app_models dictionary
                 model_name = model._meta.object_name.lower()
-                model_dict = self.app_models.setdefault(app_label, SortedDict())
+                model_dict = self.app_middleware.setdefault(app_label, SortedDict())
                 if model_name in model_dict:
                     # The same model may be imported via different paths (e.g.
                     # appname.models and project.appname.models). We use the source

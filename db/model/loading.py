@@ -31,7 +31,7 @@ class AppCache(object):
         app_store_middlewares=SortedDict(),#存储middleware
         # Mapping of installed app_labels to model modules for that app.
         app_labels={},
-
+        app_labels_middlewares={},
         # Mapping of app_labels to a dictionary of model names to model code.
         # May contain apps that are not installed.
         app_models=SortedDict(),
@@ -44,6 +44,7 @@ class AppCache(object):
         handled={},
         postponed=[],
         nesting_level=0,
+        nesting_level_middleware=0,
         _get_models_cache={},
     )
 
@@ -73,7 +74,8 @@ class AppCache(object):
                 if app_name in self.handled:
                     continue
                 self.load_app(app_name, True)
-            if not self.nesting_level:
+                self.load_app_with_middlewares(app_name,True)
+            if not self.nesting_level and not self.nesting_level_middleware:
                 for app_name in self.postponed:
                     self.load_app(app_name)
                 self.loaded = True
@@ -86,7 +88,43 @@ class AppCache(object):
         app的名字
         """
         return app_mod.__name__.split('.')[-2]
+    def load_app_with_middlewares(self,app_name, can_postpone=False):
+        self.handled[app_name] = None
+        self.nesting_level_middleware += 1
+        app_module = import_module(app_name)
+        try:
+            
+            middlewares = import_module('.middlewares', app_name)
+        except ImportError:
+            self.nesting_level_middleware -= 1
+            # If the app doesn't have a models module, we can just ignore the
+            # ImportError and return no models for it.
+            if not module_has_submodule(app_module, 'models') or not module_has_submodule(app_module, 'middlewares') :
+                return None
+            # But if the app does have a models module, we need to figure out
+            # whether to suppress or propagate the error. If can_postpone is
+            # True then it may be that the package is still being imported by
+            # Python and the models module isn't available yet. So we add the
+            # app to the postponed list and we'll try it again after all the
+            # recursion has finished (in populate). If can_postpone is False
+            # then it's time to raise the ImportError.
+            else:
+                if can_postpone:
+                    c=set(self.postponed)
+                    c.add(app_name)
+                    self.postponed=list(c)
+                    #self.postponed.append(app_name)
+                    return None
+                else:
+                    raise
 
+        self.nesting_level_middleware -= 1
+        
+        if middlewares not in self.app_store_middlewares:
+            self.app_store_middlewares[middlewares]=len(self.app_store_middlewares)
+            self.app_labels_middlewares[self._label_for(middlewares)]=middlewares
+        return middlewares
+        
     def load_app(self, app_name, can_postpone=False):
         """
         Loads the app with the provided fully qualified name, and returns the
@@ -97,7 +135,7 @@ class AppCache(object):
         app_module = import_module(app_name)
         try:
             models = import_module('.models', app_name)
-            middlewares = import_module('.middlewares', app_name)
+            
         except ImportError:
             self.nesting_level -= 1
             # If the app doesn't have a models module, we can just ignore the
@@ -123,9 +161,7 @@ class AppCache(object):
             self.app_store[models] = len(self.app_store)
             
             self.app_labels[self._label_for(models)] = models
-        if middlewares not in self.app_store_middlewares:
-            self.app_store_middlewares[middlewares]=len(self.app_store_middlewares)
-            self.app_labels_middlewares[self._label_for(middlewares)]=middlewares
+
         return models
 
     def app_cache_ready(self):
@@ -147,7 +183,7 @@ class AppCache(object):
         apps = [(v, k) for k, v in self.app_store.items()]
         apps.sort()
         return [elt[1] for elt in apps]
-
+    
     def get_app(self, app_label, emptyOK=False):
         """
         Returns the module containing the models for the given app_label. If
