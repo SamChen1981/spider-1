@@ -3,14 +3,14 @@ spider
 
  本框架的主要作用是用来方便的配置一个分布式的，高性能的爬虫系统，架构方面有点像django框架的，采用了django 
 
- 的management模块等，如果你用过django,应该会很快上手,简单介绍一下最近加入的几个功能吧，持续更新中....
+ 的management模块等，如果你用过django,应该会很快上手,简单介绍一下最近加入的几个功能吧，代码和文档持续更新中....
 
 1.功能:
 
 
     1.内置一个pylucene作为默认的搜索引擎 
     
-    2.添加web搜索功能,支持WSGI的协议(Gevent实现)
+    2.添加web搜索功能,支持WSGI的协议(Tornado实现一个异步服务器，然后WSGIApplication是用Django的代码)
     
     3.支持可配置的消息队列，默认是Rabbitmq消息队列 
     
@@ -22,7 +22,7 @@ spider
 2.基本架构图:
 
     
-
+   http://url.cn/LRZwOT 
 
 3.使用
 
