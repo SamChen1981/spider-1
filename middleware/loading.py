@@ -164,6 +164,7 @@ class MiddleWareCache(AppCache):
         Register a set of models as belonging to an app.
         """
         for model in models:
+            
             Base = declarative_base()
             if issubclass(model,Base):
 

@@ -275,6 +275,7 @@ class BaseCommand(object):
         If app is None, then this will validate all installed apps.
 
         """
+        
         from django.core.management.validation import get_validation_errors
         s = StringIO()
         num_errors = get_validation_errors(s, app)

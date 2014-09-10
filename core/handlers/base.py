@@ -74,11 +74,13 @@ class BaseHandler(object):
         self.url_openermiddleware=[]
         
         from spider.middleware.loading import get_middlewares,get_apps,get_apps_with_middlewares
+        
         app_mods=get_apps_with_middlewares()
         print "APP MODS IS %s" %app_mods
         if app_mods:
             for app_mod in app_mods:
-                middlewares=get_middlewares(app_mod)   
+                middlewares=get_middlewares(app_mod) 
+                print dir(app_mod)
                 print "MIDDLEWARES Is %s" %middlewares
                 for middleware in middlewares:
                     

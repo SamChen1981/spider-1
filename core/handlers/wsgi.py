@@ -266,3 +266,19 @@ class WSGIHandler(base.BaseHandler):
             response_headers.append((str('Set-Cookie'), str(c.output(header=''))))
         start_response(force_str(status), response_headers)
         return response
+    
+    
+    
+
+
+
+def get_wsgi_application():
+    """
+    The public interface to Django's WSGI support. Should return a WSGI
+    callable.
+
+    Allows us to avoid making django.core.handlers.WSGIHandler public API, in
+    case the internal WSGI implementation changes or moves in the future.
+
+    """
+    return WSGIHandler()
