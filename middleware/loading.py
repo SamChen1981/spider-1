@@ -50,7 +50,40 @@ class MiddleWareCache(AppCache):
             if not hasattr(self, k):
                 setattr(self,k, v)
         
+    def get_apps_with_middlewares(self):
+        "Returns a list of all installed modules that contain models."
+        self._populate()
+
+        # Ensure the returned list is always in the same order (with new apps
+        # added at the end). This avoids unstable ordering on the admin app
+        # list page, for example.
+        apps = [(v, k) for k, v in self.app_store_middlewares.items()]
+        apps.sort()
+        return [elt[1] for elt in apps]        
+
+    def get_app_with_middlewares(self, app_label, emptyOK=False):
+        """
+        Returns the module containing the models for the given app_label. If
+        the app has no models in it and 'emptyOK' is True, returns None.
+        """
+        self._populate()
+        imp.acquire_lock()
         
+        try:
+            for app_name in settings.INSTALLED_APPS:
+                if app_label == app_name.split('.')[-1]:
+                    mod = self.load_app(app_name, False)
+                    if mod is None:
+                        if emptyOK:
+                            return None
+                        raise ImproperlyConfigured("App with label %s is missing a models.py module." % app_label)
+                    else:
+                        return mod
+            raise ImproperlyConfigured("App with label %s could not be found" % app_label)
+        finally:
+            imp.release_lock()
+
+
 
     def get_middlewares(self, app_mod=None,
                    include_auto_created=False, include_deferred=False,
