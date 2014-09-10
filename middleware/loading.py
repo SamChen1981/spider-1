@@ -72,7 +72,7 @@ class MiddleWareCache(AppCache):
         try:
             for app_name in settings.INSTALLED_APPS:
                 if app_label == app_name.split('.')[-1]:
-                    mod = self.load_app(app_name, False)
+                    mod = self.load_app_with_middlewares(app_name, False)
                     if mod is None:
                         if emptyOK:
                             return None
@@ -170,7 +170,7 @@ class MiddleWareCache(AppCache):
                 # Store as 'name: model' pair in a dictionary
                 # in the app_models dictionary
                 model_name = model._meta.object_name.lower()
-                model_dict = self.app_middleware.setdefault(app_label, SortedDict())
+                model_dict = self.app_middlewares.setdefault(app_label, SortedDict())
                 if model_name in model_dict:
                     # The same model may be imported via different paths (e.g.
                     # appname.models and project.appname.models). We use the source
@@ -195,5 +195,7 @@ cache = MiddleWareCache()
 get_middlewares = cache.get_middlewares
 get_middleware = cache.get_middleware
 register_middlewares = cache.register_middlewares
+get_apps_with_middlewares=cache.get_apps_with_middlewares
+get_app_with_middlewares=cache.get_app_with_middlewares
 
 

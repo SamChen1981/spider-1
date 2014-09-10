@@ -1,0 +1,1 @@
+from spider.middleware.base import middleware_base
