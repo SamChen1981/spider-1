@@ -13,8 +13,7 @@ from django.utils import six
 import sys
 import os
 
-__all__ = ('get_apps', 'get_app', 'get_models', 'get_model', 'register_models',
-        'load_app', 'app_cache_ready')
+
 
 
 class MiddleWareCache(AppCache):
@@ -45,10 +44,12 @@ class MiddleWareCache(AppCache):
 
     def __init__(self):
         '''把父类有的子类没有的类属性加入到之类中'''
-        for k,v in super(MiddleWareCache,self).__shared_state:
-            if not self.__shared_state.has_key(k):
-                self.__shared_state.update({k,v})
-        self.__dict__ = self.__shared_state
+        super(MiddleWareCache,self).__init__()
+        
+        for k,v in MiddleWareCache.__shared_state.items():
+            if not hasattr(self, k):
+                setattr(self,k, v)
+        
         
 
     def get_middlewares(self, app_mod=None,
