@@ -3,7 +3,7 @@ import sys
 from twisted.internet import reactor
 from twisted.web.client import getPage
 from twisted.python.util import println
-from MoinMoin.conftest import callback
+
 
 
 

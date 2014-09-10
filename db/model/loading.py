@@ -28,7 +28,7 @@ class AppCache(object):
     __shared_state = dict(
         # Keys of app_store are the model modules for each application.
         app_store=SortedDict(),
-
+        app_store_middlewares=SortedDict(),#存储middleware
         # Mapping of installed app_labels to model modules for that app.
         app_labels={},
 
@@ -121,7 +121,11 @@ class AppCache(object):
         self.nesting_level -= 1
         if models not in self.app_store:
             self.app_store[models] = len(self.app_store)
+            
             self.app_labels[self._label_for(models)] = models
+        if middlewares not in self.app_store_middlewares:
+            self.app_store_middlewares[middlewares]=len(self.app_store_middlewares)
+            self.app_labels_middlewares[self._label_for(middlewares)]=middlewares
         return models
 
     def app_cache_ready(self):

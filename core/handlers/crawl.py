@@ -18,7 +18,9 @@ class CRAWLHandler(BaseHandler):
         urldict.update({'app':self.spidername})
         
         self.load_middleware()
+        msg=msgsys()
+        msg.put(settings.seed)
         callback=self.go_get_it(urldict)
-        msgsys().consumer(callback)
+        msg.consumer(callback)
         
         
