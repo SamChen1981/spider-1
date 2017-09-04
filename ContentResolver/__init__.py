@@ -12,13 +12,17 @@ def get_backends():
     if not backends:
         raise ImproperlyConfigured('No authentication backends have been defined. Does AUTHENTICATION_BACKENDS contain anything?')
     return backends
+
+
 class content_parser(object):
     def __init__(self):
         self.backend=None
         for backend in get_backends():
             self.backend=backend
             break
+
     def is_parser(self,item):
         return self.backend.is_parser(item)
+
     def parser(self,urldict):
         self.backend.parser(urldict)
