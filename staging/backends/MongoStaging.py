@@ -1,7 +1,5 @@
 # encoding=utf8
 
-from spider.utils import fetch_util
-
 from spider.staging.backends.mongomodels import data
 
 '''

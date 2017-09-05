@@ -1,34 +1,24 @@
 # coding=utf8
 
-import time
 import sys
-from database import *
 import json
-import os
-
-reload(sys)
-sys.setdefaultencoding('utf8')
-import threading
-from  multiprocessing import Lock
 import pika
-import string
-# channel.queue_declare(queue=flag, durable=True)
-import traceback
-import Queue
+
+from multiprocessing import Lock
+
 from spider.conf import settings
-from spider.msgsystem.callback import StartFuture
+from spider.msgsystem.backends.callback import StartFuture
+from spider.utils.log import logger
+from spider import constant
+from spider import exceptions
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='localhost'))
-# channel=connection.channel()
-simple_queue = Queue.Queue(0)
 
 
-class task_queue():
+class TaskQueue(object):
     # 队列的目录
-    db_directory = ''
     lock1 = Lock()
-    # connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
     '''
       该类初始化rabbitmq的队列。
@@ -41,57 +31,41 @@ class task_queue():
     '''
 
     def __init__(self, *args, **kwargs):
+        self.queue_declare(settings.RABBITMQ_QUEUE)
 
-        for k, v in kwargs.items():
-            print  v
-            task_queue.channel.queue_declare(queue=v, durable=True)
-
-            if task_queue.db_directory:
-                if os.path.isdir(task_queue.db_directory):
-                    pass
-                else:
-                    try:
-
-                        os.makedirs(task_queue.db_directory)
-                    except:
-                        error = traceback.format_exc()
-                        print error
-
-                        # 保存到待抓取队列或者错误队列，根据参数flag判断
+    def queue_declare(self, queue_name):
+        TaskQueue.channel.queue_declare(queue=queue_name, durable=True)
 
     @classmethod
-    def sendtask2Rabbit(cls, message, flag, func=None, exchange_name='',
+    def sendtask2Rabbit(cls, message, func=None, exchange_name='',
                         **kwargs):
-        msgs = []
         if not isinstance(message, list):
             return
-        count = 0
         for msg in message:
+            if "route_key" not in msg:
+                raise exceptions.RoutingKEYNotExisted
             rabbitmsg = ''
             # 传入的值为一个字典类型，有meta信息
             if isinstance(msg, dict):
-                msg.update({'func': func, 'flag': flag, 'count': 10})
                 msg.update(kwargs)
                 rabbitmsg = json.dumps(msg, ensure_ascii=False)
             if isinstance(msg, (str, unicode)):
                 # 当没有meta信息的时候
-                resultmsgs = {'url': msg, 'func': func, 'flag': flag,
-                              'count': 10}
+                resultmsgs = {'url': msg}
+                if func:
+                    resultmsgs.update({"func": func})
                 resultmsgs.update(kwargs)
                 rabbitmsg = json.dumps(resultmsgs, ensure_ascii=False)
-
-            print 'QUEUE NAME : %s' % flag
             try:
-                task_queue.channel.basic_publish(exchange=exchange_name,
-                                                 routing_key=flag,
-                                                 body=rabbitmsg,
-                                                 properties=pika.BasicProperties(
-                                                     delivery_mode=2,
-                                                     # make message persistent
-                                                 ))
-            except:
-                error = traceback.format_exc()
-                print error
+                TaskQueue.channel.basic_publish(exchange=exchange_name,
+                                                routing_key=msg['route_key'],
+                                                body=rabbitmsg,
+                                                properties=pika.BasicProperties(
+                                                    delivery_mode=constant.MESSAGE_PERSISTENCE,
+                                                    # make message persistent
+                                                ))
+            except Exception as e:
+                logger.error(e)
                 sys.exit()
 
             print " [x] Sent %r" % (rabbitmsg,)
@@ -105,7 +79,7 @@ class task_queue():
             channel = connection.channel()
 
             print ' [*] Waiting for messages. To exit press CTRL+C'
-            t = task_queue(channel, **{'flag': settings.flag})
+            t = TaskQueue(channel, **{'flag': settings.flag})
 
             channel.basic_qos(prefetch_count=1)
 
@@ -117,12 +91,10 @@ class task_queue():
         channel.start_consuming()
 
     @classmethod
-    def put(cls, message, flag, mqtype=None, func=None, exchange_name='',
+    def put(cls, message, mqtype=None, func=None,
+            exchange_name='',
             **kwargs):
-        msgs = []
-        print mqtype
         if not isinstance(message, list):
             return
-
-        task_queue.sendtask2Rabbit(message, flag, exchange_name=exchange_name,
-                                   **kwargs)
+        TaskQueue.sendtask2Rabbit(message, exchange_name=exchange_name,
+                                  **kwargs)

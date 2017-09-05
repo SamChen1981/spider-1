@@ -153,3 +153,25 @@ def strip_tags(cls, html):
     parser.feed(html)
     parser.close()
     return ''.join(result)
+
+
+def remove_duplicate(rawlinklist):
+    links = []
+    chked_url = []
+
+    def from_iterable(iterables):
+        # chain.from_iterable(['ABC', 'DEF']) --> A B C D E F
+        for it in iterables:
+            yield it
+
+    for rawurl in from_iterable(rawlinklist):
+        if isinstance(rawurl, (str, unicode)):
+            if rawurl not in chked_url:
+                links.extend([{'url': rawurl}])
+                chked_url.append(rawurl)
+        else:
+            if isinstance(rawurl, dict) and 'url' in rawurl:
+                if not rawurl['url'] in chked_url:
+                    links.extend([rawurl])
+                    chked_url.append(rawurl['url'])
+    return links

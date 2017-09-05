@@ -1,0 +1,3 @@
+# Horizon Core Requirements
+pike
+twisted

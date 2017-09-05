@@ -2,14 +2,13 @@
 from __future__ import unicode_literals
 
 import os
-
+import importlib
 from spider.conf import settings
 
-from spider.utils.importlib import import_module
 from spider import exceptions
 from spider.staging import staging
 from spider.msgsystem import msgsys
-
+from spider.utils import fetch_util
 import re
 
 
@@ -47,9 +46,6 @@ class BaseHandler(object):
 
     def __init__(self):
         self._filter_middleware = []
-        self._template_response_middleware = []
-        self._response_middleware = []
-        self._exception_middleware = []
         self._postfilter_middleware = []
         self.url_preopenermiddleware = []
         self.url_openermiddleware = []
@@ -65,7 +61,7 @@ class BaseHandler(object):
                 raise exceptions.ImproperlyConfigured(
                     '%s isn\'t a middleware module' % middleware_path)
             try:
-                mod = import_module(mw_module)
+                mod = importlib.import_module(mw_module)
             except ImportError as e:
                 raise exceptions.ImproperlyConfigured(
                     'Error importing middleware %s: "%s"' % (mw_module, e))
@@ -96,27 +92,22 @@ class BaseHandler(object):
             if hasattr(mw_instance, 'process_save'):
                 self.url_savemiddleware.append(mw_instance.process_save)
 
-    def go_get_it(self, **kwargs):
+    def go_get_it(self, url_body):
         for middleware_method in self.url_preopenermiddleware:
-            middleware_method(kwargs)
+            middleware_method(url_body)
         for middleware_method in self.url_openermiddleware:
-            con = middleware_method(kwargs)
-            if isinstance(con, tuple) and len(con) == 3:
-                break
+            content = middleware_method(url_body)
+            url_body["content"] = content
         # filter返回一个当前url下一级的所有链接,可以是list 也可以是dict
         # 这里可以根据每个网站的不同自定义抓取的方式，若_filter_middleware为None，将报
         # NotImplement异常,这个过滤链后端必须实现的方法有is_filter(),filter()，分别是
         # 1.判断是否要在当前的网页解析下一级的链接,is_filter
         # 2.filter 分析这个网页，找到所有下一级的链接
-        if len(self._filter_middleware) == 0:
-            raise NotImplementedError()
         rawlinks = []
         for middleware_method in self._filter_middleware:
-            rawlinks = middleware_method(urldict)
-        # postfilter的基本功能:
-        # 1.对相同链接进行去重
-        # 2.其他自定义的操作
+            rawlinks = middleware_method(url_body)
+        refined_links = fetch_util.remove_duplicate(rawlinks)
         for middleware_method in self._postfilter_middleware:
-            middleware_method(urldict, rawlinks)
+            middleware_method(url_body)
         # 将上面的rawlinks，就是下一级要抓取的链接加入到队列中和暂存区
-        next_page(rawlinks)
+        next_page(refined_links)

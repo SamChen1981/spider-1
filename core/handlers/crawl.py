@@ -16,8 +16,9 @@ class CRAWLHandler(BaseHandler):
 
     def __call__(self):
 
-        self.load_middleware()
         msg = msgsys()
-        msg.put(settings.seed)
-        callback = self.go_get_it()
+        msg.put([{"url": settings.SEEDS,
+                  "route_key": settings.RABBITMQ_QUEUE}])
+        self.load_middleware()
+        callback = self.go_get_it
         msg.consumer(callback)

@@ -2,7 +2,7 @@
 
 from spider.utils.module_loading import import_by_path
 from spider.conf import settings
-from spider.core.exceptions import ImproperlyConfigured
+from spider.exceptions import ImproperlyConfigured
 
 
 def load_backend(path):
