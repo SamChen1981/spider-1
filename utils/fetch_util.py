@@ -1,17 +1,13 @@
 # coding=utf8
 
-import Queue
 import re
-import traceback
-
 import HTMLParser
-
 import string
 
-queue = Queue.Queue()
+from spider.utils.log import logger
 
 
-class extractor(object):
+class Extractor(object):
     '''两个函数两个功能'''
 
     # 提取key-value类型的数据
@@ -19,17 +15,15 @@ class extractor(object):
     # 列表返回
     @classmethod
     def simpleExtractorAsList(cls, regx, content, *args, **kwargs):
+        uniques = []
         try:
-            uniques = []
-
             regx = re.compile(regx)
             templist = re.findall(regx, content)
             uniques.extend(templist)
             return uniques
-        except:
-            print " [x] Error occor"
-            traceback.print_exc()
-
+        except Exception as e:
+            logger.error(" [x] Error occor")
+            logger.exception(e)
         return uniques
 
     @classmethod
@@ -46,16 +40,13 @@ class extractor(object):
                 try:
 
                     values.append(match.group(ind))
-                except Exception:
-                    error = traceback.format_exc()
-                    print error
-
+                except Exception as e:
+                    logger.exception(e)
             return values
 
         if isinstance(index, (str, int)):
             result = ''
             try:
-
                 result = match.group(index)
             except:
                 pass

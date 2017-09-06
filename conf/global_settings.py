@@ -1,6 +1,6 @@
 # encoding=utf8
 DATABASES = []
-SEEDS = ['https://www.openstack.org/software/project-navigator']
+SEEDS = ['https://www.literotica.com/c/lesbian-sex-stories']
 RABBITMQ_QUEUE = "test"
 SAVE_PAGE_REGLIST = []
 # 存储内容后端,用来筛选需要存储的字段

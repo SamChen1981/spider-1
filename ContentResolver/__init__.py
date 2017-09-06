@@ -17,7 +17,7 @@ def get_backends():
     return backends
 
 
-class content_parser(object):
+class ContentParser(object):
     def __init__(self):
         self.backend = None
         for backend in get_backends():
@@ -27,5 +27,10 @@ class content_parser(object):
     def is_parser(self, item):
         return self.backend.is_parser(item)
 
-    def parser(self, urldict):
-        self.backend.parser(urldict)
+    def parser(self, content):
+        return self.backend.parser(content)
+
+    def parser_content(self, content):
+        self.backend.parser_content(content)
+
+content_parser = ContentParser()

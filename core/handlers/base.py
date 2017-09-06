@@ -114,6 +114,8 @@ class BaseHandler(object):
             for middleware_method in self._filter_middleware:
                 rawlinks = middleware_method(url_body)
 
+            for middleware_method in self.url_parserermiddleware:
+                middleware_method(url_body)
             refined_links = fetch_util.remove_duplicate(rawlinks)
             for middleware_method in self._postfilter_middleware:
                 middleware_method(url_body)

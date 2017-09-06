@@ -1,10 +1,7 @@
-from spider.save_page import PageSave
 from HTMLParser import HTMLParser
-import StringIO
-from spider.ContentResolver.backends.InverseList.pylucene_test import \
-    luceneIndexer
 
-from datetime import datetime
+from spider.utils.fetch_util import Extractor
+from spider.utils.log import logger
 
 
 class MLStripper(HTMLParser):
@@ -26,9 +23,6 @@ def strip_tags(html):
 
 
 def _get_rid_of_html(content):
-    '''
-        去除html标签
-    '''
     return strip_tags(content)
 
 
@@ -36,11 +30,16 @@ class Inverted_List(object):
     def is_parser(self, urldict):
         return True
 
-    def parser(self, urldict):
-        '''   
-            解析成倒排列表
-            用pylucene对每个content建立索引
-            索引索引默认存放于磁盘上，路径由settings指定
-        '''
+    def getlinks(self, content):
+        regx = r'<div class="b-slb-item">.*?<h3>.*?<a href="(.*?)">.*?</div>'
+        links = Extractor.simpleExtractorAsList(regx, content)
+        logger.info("get content title: {0}".format(links))
+        return links
 
-        pass
+    def parser(self, content):
+        return self.getlinks(content)
+
+    def parser_content(self, content):
+        regx = r'<div class="b-slb-item">.*?<h3>.*?<a href="(.*?)">.*?</div>'
+        titles = Extractor.simpleExtractorAsList(regx, content)
+        logger.info("get content title: {0}".format(titles))

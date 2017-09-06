@@ -39,8 +39,7 @@ def saveHTML(content, **kwargs):
             logger.error(message)
         else:
             message = e
-            print message
-            logging.info(message)
+            logger.info(message)
         return -1
 
     filepath = os.path.join(top_dir, str(uuid.uuid4()) + file_ext)
