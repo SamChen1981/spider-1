@@ -2,64 +2,65 @@
 import logging
 import time
 import os
-import StringIO
 import re
+import uuid
 
 from datetime import datetime
+from spider.utils.log import logger
 
-logger = logging.getLogger(__name__)
 
-
-def saveHTML(*args, **kwargs):
+def saveHTML(content, **kwargs):
     '''
       保存html.会根据settings.py提供的正则保存
     '''
-    realurl = kwargs['realurl']
     url = kwargs['url']
-
-    content = kwargs['content']
-
+    file_ext = ".html"
     # 以/从最右边分割开始，助剂建立目录建立目录
     dirstr = url.rsplit('/', 1)[0]
     # 去掉http://
     pattern = re.compile(r'http://')
-    # 去掉换行符
-
     dirstr = re.sub(pattern, '', dirstr)
+    # 去掉http://
+    pattern = re.compile(r'https://')
+    dirstr = re.sub(pattern, '', dirstr)
+    # 去掉换行符
     pattern = re.compile(r'\n')
     dirstr = re.sub(pattern, '', dirstr)
     # 再根据dirstr以/划分
-    dircomponent = dirstr.split('/')
+    current_date = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d')
     top_dir = os.path.join(os.getcwd(), dirstr)
+    top_dir = os.path.join(top_dir, current_date)
     try:
         if not os.path.exists(top_dir):
             os.makedirs(top_dir)
     except OSError as e:
         if e.errno == os.errno.EEXIST:
             message = "'%s' already exists" % top_dir
-            print message
-            logging.info(message)  # will not print anything
+            logger.error(message)
         else:
             message = e
             print message
             logging.info(message)
         return -1
-    filepath = os.path.join(top_dir,
-                            datetime.fromtimestamp(time.time()).strftime(
-                                '%Y-%m-%d:%H:%M:%S') + '.html')
-    print 'THE SAVE LOCATION IS %s' % filepath
-    output = StringIO.StringIO()
-    output.write(content)
+
+    filepath = os.path.join(top_dir, str(uuid.uuid4()) + file_ext)
+    write_txt_into_file(content, filepath)
+    logger.info('The file is saved into %s' % filepath)
+
+
+def write_txt_into_file(content, filepath):
+    with open(filepath, 'wt') as f:
+        f.write(content)
+
+
+def download_file(content, filepath):
+    with open(filepath, 'wb') as f:
+        for chunk in content.iter_content(chunk_size=1024):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+                f.flush()
 
 
 class SavePageBackend(object):
-    """
-        根据用户提供的url的正则表达式 ，判断某一个url是否应该保存
-        用户应该提供:
-        1.具体的页面存放backend,如没有提供，默认是保存于磁盘上，id 是路径的和时间的 md5
-        2.判定的url ,一个list 或者itertable，如果目前的url匹配任意一个，则认为这个url应该保存，如果是[*]
-        则保存所有遇到的页面，如果是[!]，不保存任何页面。
-    """
-
     def saveHTML(self, content, **kwargs):
-        saveHTML(**kwargs)
+        saveHTML(content, **kwargs)

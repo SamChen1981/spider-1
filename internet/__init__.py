@@ -17,10 +17,13 @@ def get_backends():
     return backends
 
 
-class httpreq(object):
+class HttpReq(object):
     def __init__(self):
         for backend in get_backends():
             self.backend = backend
 
-    def request(self, urldict):
-        self.backend.request(urldict)
+    def request(self, url):
+        response = self.backend.request(url)
+        return response.text.encode("utf-8")
+
+httpreq = HttpReq()

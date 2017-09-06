@@ -1,16 +1,19 @@
-'''
-Created on 2014年9月1日
-
-@author: mu
-'''
 # encoding=utf8
-from spider.ContentResolver import content_parser
+
+from spider import constant
+from spider.utils.log import logger
 
 
 class ParserMiddleware(object):
 
     def process_parser(self, url_body):
-        c_parser = content_parser()
-        c_parser.is_parser(url_body)
-        links = c_parser.parser(url_body)
-        return links
+        """分析url_body中的content
+
+        :param url_body:
+        :return: 返回后需要抓取的连接，list类型
+        """
+
+        logger.debug("parser url content: {0}".format(url_body.get(
+            constant.RESPONSE_SIGNATURE)))
+
+        return []

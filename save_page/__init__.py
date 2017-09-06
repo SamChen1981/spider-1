@@ -24,8 +24,5 @@ class PageSave(object):
         for backend in get_backends():
             self.backend = backend
 
-    def save(self, urldict):
-        if len(settings.SAVE_PAGE_REGLIST) == 0:
-            raise ImproperlyConfigured("REGLIST MUST SET PROPERLY")
-        if Rule.matchurl(url=urldict["url"], regx=settings.SAVE_PAGE_REGLIST):
-            self.backend.saveHTML(**urldict)
+    def save(self, content, **kwargs):
+        self.backend.saveHTML(content, **kwargs)

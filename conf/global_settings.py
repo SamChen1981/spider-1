@@ -1,6 +1,6 @@
 # encoding=utf8
 DATABASES = []
-SEEDS = []
+SEEDS = ['https://www.openstack.org/software/project-navigator']
 RABBITMQ_QUEUE = "test"
 SAVE_PAGE_REGLIST = []
 # 存储内容后端,用来筛选需要存储的字段
@@ -13,13 +13,13 @@ PARSER_BACKENDS = [
 # 消息队列系统后端
 RABBITMQ_BACKENDS = ["spider.msgsystem.backends.rabbitmq.TaskQueue"]
 # 访问页面的网络接口后端，默认是twisted提供的客户端
-INTERNET_BACKENDS = ["spider.internet.backends.twisted.twisted_client"]
+INTERNET_BACKENDS = ["spider.internet.backends.twisted.HttpClient"]
 
 # 处理中间件
-MIDDLEWARE_CLASSES = ["spider.core.middleware.opener.OpenerMiddleware",
-                      "spider.core.middleware.parser.ParserMiddleware",
-                      "spider.core.middleware.postfilters.PostFilterMiddleware",
-                      "spider.core.middleware.storage.StorageMiddleWare"]
+MIDDLEWARE_CLASSES = ["spider.middleware.opener.OpenerMiddleware",
+                      "spider.middleware.parser.ParserMiddleware",
+                      "spider.middleware.postfilters.PostFilterMiddleware",
+                      "spider.middleware.storage.StorageMiddleWare"]
 
 # List of locations of the template source files, in search order.
 

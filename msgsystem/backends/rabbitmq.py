@@ -73,18 +73,11 @@ class TaskQueue(object):
     @classmethod
     def consumer(cls, _process):
         try:
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host='localhost'))
-
             channel = connection.channel()
-
-            print ' [*] Waiting for messages. To exit press CTRL+C'
-            t = TaskQueue(channel, **{'flag': settings.flag})
-
+            logger.info(' [*] Waiting for messages. To exit press CTRL+C')
             channel.basic_qos(prefetch_count=1)
-
             callback = StartFuture(_process).callback
-            channel.basic_consume(callback, queue=settings.flag)
+            channel.basic_consume(callback, queue=settings.RABBITMQ_QUEUE)
         except Exception:
             sys.exit(0)
 
