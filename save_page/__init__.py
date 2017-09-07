@@ -25,4 +25,5 @@ class PageSave(object):
             self.backend = backend
 
     def save(self, content, **kwargs):
-        self.backend.saveHTML(content, **kwargs)
+        if content:
+            self.backend.saveHTML(content, **kwargs)

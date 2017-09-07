@@ -1,3 +1,4 @@
 # Horizon Core Requirements
 pike
 rabbitmq
+redis

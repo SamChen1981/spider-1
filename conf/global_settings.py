@@ -1,4 +1,6 @@
 # encoding=utf8
+import os
+
 DATABASES = []
 SEEDS = ['https://www.literotica.com/c/lesbian-sex-stories']
 RABBITMQ_QUEUE = "test"
@@ -26,3 +28,4 @@ MIDDLEWARE_CLASSES = ["spider.middleware.opener.OpenerMiddleware",
 LOGGING_CONFIG = 'spider.utils.log.dictConfig'
 # Custom logging configuration.
 LOGGING = {}
+CONF_DIR = os.path.split(os.path.realpath(__file__))[0]

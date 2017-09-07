@@ -1,26 +1,8 @@
 # encoding=utf8
 
-from spider.staging.backends.mongomodels import data
+from spider.staging.backends import redis_utils
 
-'''
-    默认的中间值存储方式是mongodb,
-'''
-
-
-def add(item):
-    try:
-        d = data(url=item)
-        d.save()
-    except:
-        pass
-
-
-def checkvisited(item):
-    try:
-        data.objects.get(url=item)
-        return True
-    except:
-        return False
+REDIS_SET_NAME = "test:test"
 
 
 class StagingBackend(object):
@@ -33,8 +15,8 @@ class StagingBackend(object):
     """
 
     def checkvisited(self, item, **kwargs):
-        filepath = checkvisited(item)
+        filepath = redis_utils.redis_db.check_repeate(item, REDIS_SET_NAME)
         return filepath
 
     def add(self, item, **kwargs):
-        pass
+        redis_utils.redis_db.add(item, REDIS_SET_NAME)

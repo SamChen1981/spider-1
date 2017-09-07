@@ -17,7 +17,7 @@ def get_backends():
     return backends
 
 
-class msgsys(object):
+class MsgQueue(object):
     def __init__(self):
         self.backend = None
         for backend in get_backends():
@@ -32,3 +32,5 @@ class msgsys(object):
 
     def consumer(self, callback):
         self.backend.consumer(callback)
+
+msgsys = MsgQueue()

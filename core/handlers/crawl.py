@@ -15,11 +15,9 @@ class CRAWLHandler(BaseHandler):
         self.spidername = spidername
 
     def __call__(self):
-
-        msg = msgsys()
         for seed in settings.SEEDS:
-            msg.put([{"url": seed,
-                      "route_key": settings.RABBITMQ_QUEUE}])
+            msgsys.put([{"url": seed,
+                         "route_key": settings.RABBITMQ_QUEUE}])
         self.load_middleware()
         callback = self.go_get_it
-        msg.consumer(callback)
+        msgsys.consumer(callback)

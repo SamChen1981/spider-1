@@ -32,14 +32,14 @@ def next_page(links):
                     pattern = re.compile(r'(?:http.+|www.+).+')
                     match = re.search(pattern, message)
                     if not match:
-                        message = os.path.join(settings.DOMAIN, message)
-                    # message=urllib.quote(message)
-
+                        continue
                     if not staging.checkvisited(message):
                         parurl['url'] = message
+                        process_route_key_to_link(settings.RABBITMQ_QUEUE,
+                                                  parurl)
                         urllist.append(message)
                         uniquelinks.append(parurl)
-    msgsys().put(uniquelinks)
+    msgsys.put(uniquelinks)
     for link in urllist:
         staging.add(link)
 
@@ -112,8 +112,9 @@ class BaseHandler(object):
             # 2.filter 分析这个网页，找到所有下一级的链接
             rawlinks = []
             for middleware_method in self._filter_middleware:
-                rawlinks = middleware_method(url_body)
-
+                filtered_resp = middleware_method(url_body)
+                if isinstance(filtered_resp, list):
+                    rawlinks = filtered_resp
             for middleware_method in self.url_parserermiddleware:
                 middleware_method(url_body)
             refined_links = fetch_util.remove_duplicate(rawlinks)
@@ -126,3 +127,20 @@ class BaseHandler(object):
         except requests.exceptions.InvalidSchema as e:
             logger.error(e)
 
+
+def process_route_key_to_link(route_key, parurl):
+    if not isinstance(parurl, dict):
+        return
+    if "route_key" not in parurl:
+        parurl["route_key"] = route_key
+
+
+def tag_route_key_to_links(route_key, links):
+    """给每个待抓取的Link打route_key
+
+    :param route_key:
+    :param links: dict 类型
+    :return:
+    """
+    for parurl in links:
+        process_route_key_to_link(route_key, parurl)

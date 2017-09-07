@@ -8,8 +8,10 @@ from spider.utils.log import logger
 class ParserMiddleware(object):
 
     def process_filter(self, url_body):
-        logger.debug("parser url content: {0}".format(url_body.get(
-            constant.RESPONSE_SIGNATURE)))
+        content = url_body.get(constant.RESPONSE_SIGNATURE)
+        if content:
+            return
+        logger.debug("parser url content: {0}".format(content))
         logger.info("process url: {0}, filter".format(url_body["url"]))
         return content_parser.parser(
             url_body.get(constant.RESPONSE_SIGNATURE))
