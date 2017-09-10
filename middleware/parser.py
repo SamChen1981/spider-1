@@ -8,18 +8,17 @@ from spider.utils.log import logger
 class ParserMiddleware(object):
 
     def process_filter(self, url_body):
+        """返回待抓取链接的url列表"""
         content = url_body.get(constant.RESPONSE_SIGNATURE)
-        if content:
-            return
         logger.debug("parser url content: {0}".format(content))
-        logger.info("process url: {0}, filter".format(url_body["url"]))
-        return content_parser.parser(
-            url_body.get(constant.RESPONSE_SIGNATURE))
+        logger.info("process url: {0}, filter raw links".format(url_body[
+                                                                   "url"]))
+        raw_links = content_parser.parser(content, url_body)
+        url_body[constant.RAW_LINKS] = raw_links
 
     def process_parser(self, url_body):
-        """分析url_body中的content
-
-        :param url_body:包含content
-        :return: 返回后需要抓取的连接，list类型
-        """
-        return
+        """返回从当前页面提取到的数据"""
+        logger.info("process url: {0}, parse content".format(url_body["url"]))
+        content = url_body.get(constant.RESPONSE_SIGNATURE)
+        data = content_parser.parser_content(content, url_body=url_body)
+        url_body[constant.REFINED_DATA] = data

@@ -24,6 +24,6 @@ class HttpReq(object):
 
     def request(self, url):
         response = self.backend.request(url)
-        return response.text.encode("utf-8")
+        return response.get("text").encode("utf-8")
 
 httpreq = HttpReq()

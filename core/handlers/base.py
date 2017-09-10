@@ -1,47 +1,20 @@
 # encoding=utf8
 from __future__ import unicode_literals
 
-import os
 import importlib
 import requests
 
 from spider.conf import settings
 
+from spider import constant
 from spider import exceptions
-from spider.staging import staging
 from spider.msgsystem import msgsys
 from spider.utils import fetch_util
 from spider.utils.log import logger
-import re
 
 
 def next_page(links):
-    '''这个函数的功能是将下一级的链接加入到队列中去 ，并且，把这些链接标记成已访问，
-    此函数会在settings.MSGSYS_BACKEND和settings.STAGING_BACKEND中找到消息队列的后端
-          和暂存区的后端，默认的消息队列后端和暂存区后端分别是rabbitmq和mongodb
-    '''
-    uniquelinks = []
-    urllist = []
-    for parurl in links:
-        if isinstance(parurl, dict):
-            for k, message in parurl.items():
-                # 依次取出所有元素判断该url是否被访问过
-                if k == 'url':
-                    # 判断是否为绝对地址
-                    message = str(message)
-                    pattern = re.compile(r'(?:http.+|www.+).+')
-                    match = re.search(pattern, message)
-                    if not match:
-                        continue
-                    if not staging.checkvisited(message):
-                        parurl['url'] = message
-                        process_route_key_to_link(settings.RABBITMQ_QUEUE,
-                                                  parurl)
-                        urllist.append(message)
-                        uniquelinks.append(parurl)
-    msgsys.put(uniquelinks)
-    for link in urllist:
-        staging.add(link)
+    msgsys.put(links)
 
 
 class BaseHandler(object):
@@ -58,7 +31,7 @@ class BaseHandler(object):
     def load_middleware(self):
 
         for middleware_path in settings.MIDDLEWARE_CLASSES:
-            logger.info("middleware_path: {0}".format(middleware_path))
+            logger.debug("middleware_path: {0}".format(middleware_path))
             try:
                 mw_module, mw_classname = middleware_path.rsplit('.', 1)
             except ValueError:
@@ -103,44 +76,25 @@ class BaseHandler(object):
                 middleware_method(url_body)
             for middleware_method in self.url_openermiddleware:
                 content = middleware_method(url_body)
-                url_body["response"] = content
-                logger.debug(url_body["response"])
+                url_body[constant.RESPONSE_SIGNATURE] = content
+                logger.debug(url_body[constant.RESPONSE_SIGNATURE])
             # filter返回一个当前url下一级的所有链接,可以是list 也可以是dict
             # 这里可以根据每个网站的不同自定义抓取的方式，若_filter_middleware为None，将报
             # NotImplement异常,这个过滤链后端必须实现的方法有is_filter(),filter()，分别是
             # 1.判断是否要在当前的网页解析下一级的链接,is_filter
             # 2.filter 分析这个网页，找到所有下一级的链接
-            rawlinks = []
             for middleware_method in self._filter_middleware:
-                filtered_resp = middleware_method(url_body)
-                if isinstance(filtered_resp, list):
-                    rawlinks = filtered_resp
+                middleware_method(url_body)
             for middleware_method in self.url_parserermiddleware:
                 middleware_method(url_body)
-            refined_links = fetch_util.remove_duplicate(rawlinks)
             for middleware_method in self._postfilter_middleware:
                 middleware_method(url_body)
             for middleware_method in self.url_savemiddleware:
                 middleware_method(url_body)
             # 将上面的rawlinks，就是下一级要抓取的链接加入到队列中和暂存区
-            next_page(refined_links)
+            if constant.RAW_LINKS in url_body:
+                refined_links = fetch_util.refine_links(
+                    url_body[constant.RAW_LINKS])
+                next_page(refined_links)
         except requests.exceptions.InvalidSchema as e:
             logger.error(e)
-
-
-def process_route_key_to_link(route_key, parurl):
-    if not isinstance(parurl, dict):
-        return
-    if "route_key" not in parurl:
-        parurl["route_key"] = route_key
-
-
-def tag_route_key_to_links(route_key, links):
-    """给每个待抓取的Link打route_key
-
-    :param route_key:
-    :param links: dict 类型
-    :return:
-    """
-    for parurl in links:
-        process_route_key_to_link(route_key, parurl)

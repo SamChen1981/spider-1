@@ -1,8 +1,8 @@
+# encoding=utf8
 from spider.conf import settings
 from spider.exceptions import ImproperlyConfigured
 
 from spider.utils.module_loading import import_by_path
-from spider.utils.fetch_util import Rule
 
 
 def load_backend(path):

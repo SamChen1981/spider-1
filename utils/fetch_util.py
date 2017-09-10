@@ -3,8 +3,11 @@
 import re
 import HTMLParser
 import string
+import os
 
+from spider.conf import settings
 from spider.utils.log import logger
+from spider.staging import staging
 
 
 class Extractor(object):
@@ -92,13 +95,13 @@ class Rule(object):
             return False
         pattern = re.compile(kwargs['regx'])
         url = string.strip(kwargs['url'])
-        match = re.search(pattern, kwargs['url'])
+        match = re.search(pattern, url)
         if match:
             return True
         return False
 
 
-def removeSpecialChar(cls, content):
+def remove_special_char(content):
     pattern = re.compile(r'.*?(").*?')
     content = re.sub(pattern, '', content)
     pattern = re.compile(r'：')
@@ -129,7 +132,7 @@ def from_iterable(cls, iterables):
         yield it
 
 
-def strip_tags(cls, html):
+def strip_tags(html):
     """
     Python中过滤HTML标签的函数
     >>> str_text=strip_tags("<font color=red>hello</font>")
@@ -139,30 +142,58 @@ def strip_tags(cls, html):
     html = html.strip()
     html = html.strip("\n")
     result = []
-    parser = HTMLParser()
+    parser = HTMLParser.HTMLParser()
     parser.handle_data = result.append
     parser.feed(html)
     parser.close()
     return ''.join(result)
 
 
-def remove_duplicate(rawlinklist):
-    links = []
-    chked_url = []
+def check_visited(rawurl):
+    return staging.checkvisited(rawurl)
 
-    def from_iterable(iterables):
-        # chain.from_iterable(['ABC', 'DEF']) --> A B C D E F
-        for it in iterables:
-            yield it
 
-    for rawurl in from_iterable(rawlinklist):
-        if isinstance(rawurl, (str, unicode)):
-            if rawurl not in chked_url:
-                links.extend([{'url': rawurl}])
-                chked_url.append(rawurl)
-        else:
-            if isinstance(rawurl, dict) and 'url' in rawurl:
-                if not rawurl['url'] in chked_url:
-                    links.extend([rawurl])
-                    chked_url.append(rawurl['url'])
+def process_add_domain_to_link(parurl, domain):
+    parurl = str(parurl)
+    pattern = re.compile(r'(?:http.+|www.+).+')
+    match = re.search(pattern, parurl)
+    if not match:
+        parurl = os.path.join(domain, parurl)
+    return parurl
+
+
+def process_route_key_to_link(parurl, route_key, domain):
+    process_add_domain_to_link(parurl, domain)
+    if not isinstance(parurl, dict):
+        parurl = {"url": parurl}
+
+    if "route_key" not in parurl:
+        parurl["route_key"] = route_key
+    return parurl
+
+
+def tag_info_to_links(route_key, domain, links):
+    """给每个待抓取的Link打route_key
+
+    :param route_key:
+    :param links: dict 类型
+    :return:
+    """
+    import functools
+    links = map(functools.partial(process_route_key_to_link,
+                                  route_key=route_key,
+                                  domain=domain
+                                  ),
+                links)
+    return links
+
+
+def refine_links(rawlinklist):
+    # 去除重复
+    links = list(set(rawlinklist))
+    # 访问过的url不再访问
+    links = filter(check_visited, links)
+    # 给url打标签
+    links = tag_info_to_links(settings.RABBITMQ_QUEUE, settings.DOMAIN, links)
+    logger.info("refined links: {0}".format(links))
     return links

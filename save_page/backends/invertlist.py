@@ -1,11 +1,11 @@
 # encoding=utf8
-import logging
 import time
 import os
 import re
 import uuid
 
 from datetime import datetime
+
 from spider.utils.log import logger
 
 
@@ -62,4 +62,5 @@ def download_file(content, filepath):
 
 class SavePageBackend(object):
     def saveHTML(self, content, **kwargs):
+        """保存HTML到存储设备上"""
         saveHTML(content, **kwargs)

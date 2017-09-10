@@ -1,6 +1,9 @@
+# encoding=utf8
+
 from spider.utils.module_loading import import_by_path
 from spider.conf import settings
 from spider.exceptions import ImproperlyConfigured
+from spider.utils import skip_process
 
 
 def load_backend(path):
@@ -27,10 +30,13 @@ class ContentParser(object):
     def is_parser(self, item):
         return self.backend.is_parser(item)
 
-    def parser(self, content):
-        return self.backend.parser(content)
+    def parser(self, content, url_body=None):
+        """从当前页面提取到链接"""
+        return self.backend.parser(content, url_body)
 
-    def parser_content(self, content):
-        self.backend.parser_content(content)
+    @skip_process.skip_if_content_invalid(settings.REG_LIST)
+    def parser_content(self, content, url_body=None):
+        """从当前页面解析到数据"""
+        return self.backend.parser_content(content, url_body)
 
 content_parser = ContentParser()
